@@ -1,0 +1,1 @@
+FRED_API_KEY = '76c5b2251ca123fe274a24da976ca8ac'

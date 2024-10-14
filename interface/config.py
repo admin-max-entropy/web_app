@@ -1,0 +1,3 @@
+
+LINE_COLOR = "#A7D8DE"
+LINE_WIDTH = 1.2
