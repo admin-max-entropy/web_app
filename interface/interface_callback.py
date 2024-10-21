@@ -22,7 +22,7 @@ def __overdraft_figure(is_average):
                                     text=list(map(lambda x: x.strftime("%Y-%m-%d"),
                                                   list(ts.keys()))),
                                     hovertemplate=
-                                    '%{y:.3f} bps/% <br>' +
+                                    '%{y:.0f} Million ($) <br>' +
                                     '%{text}',
                                     ))
         end_date = list(ts.keys())[-1]
