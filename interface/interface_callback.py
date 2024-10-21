@@ -90,6 +90,9 @@ def __iorb_figure():
     return figure
 
 def iorb_effr_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
     figure = __iorb_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
@@ -102,6 +105,9 @@ def iorb_effr_panel():
     ], shadow="xs")
 
 def elasticity_panel():
+    """
+    :return: panel for elasticity monitor
+    """
     figure = __elasticity_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
