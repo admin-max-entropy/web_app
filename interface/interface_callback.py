@@ -109,16 +109,17 @@ def elasticity_panel():
     :return: panel for elasticity monitor
     """
     figure = __elasticity_figure()
+    link = ("https://libertystreeteconomics.newyorkfed.org/2024/10/tracking-"
+            "reserve-ampleness-in-real-time-using-reserve-demand-elasticity/")
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-        html.Div(dcc.Markdown('''
+        html.Div(dcc.Markdown(f'''
         * When reserves become less abundant, the elasticity of the federal funds rate to reserve changes could 
         be negative and statistically different from zero.
         * Recent references: 
             - [Gara Afonso, Domenico Giannone, Gabriele La Spada, and John C. Williams, “Tracking Reserve Ampleness 
             in Real Time Using Reserve Demand Elasticity,” Federal Reserve Bank of New York Liberty Street Economics, 
-            October 17, 2024](https://libertystreeteconomics.newyorkfed.org/2024/10/tracking-reserve-ampleness-in-real-
-            time-using-reserve-demand-elasticity/)
+            October 17, 2024]({link})
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
