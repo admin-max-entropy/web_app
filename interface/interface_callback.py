@@ -9,10 +9,10 @@ from interface import interface_utils
 from src import config as src_config
 
 
-def __overdraft_figure():
+def __overdraft_figure(is_average):
     color_map = {"Total": "#DC143C", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
                  "Book-Entry": "#7FFFD4"}
-    data_set = src.liquidity_monitor.daylight_overdraft()
+    data_set = src.liquidity_monitor.daylight_overdraft(is_average)
     figure = go.Figure()
     end_date = None
     ts_tmp = None
@@ -34,7 +34,8 @@ def __overdraft_figure():
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
     figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
                                 line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
-    figure.update_layout(title="Intraday Peak Overdrafts of Deposit Institutions")
+    figure.update_layout(title=f"Intraday {'Peak' if not is_average else 'Average'} "
+                               f"Overdrafts of Deposit Institutions")
     figure = interface_utils.format_figure(figure)
     return figure
 
@@ -148,27 +149,25 @@ def elasticity_panel():
         * Recent references: 
             - [Gara Afonso, Domenico Giannone, Gabriele La Spada, and John C. Williams, “Tracking Reserve Ampleness 
             in Real Time Using Reserve Demand Elasticity,” Federal Reserve Bank of New York Liberty Street Economics, 
-            October 17, 2024]({link})
+            10/17/2024]({link})
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
 
-def overdraft_panel():
+def overdraft_panel(is_average):
     """
     :return: panel for elasticity monitor
     """
-    figure = __overdraft_figure()
-    link = ("https://libertystreeteconomics.newyorkfed.org/2024/10/tracking-"
-            "reserve-ampleness-in-real-time-using-reserve-demand-elasticity/")
+    figure = __overdraft_figure(is_average)
+    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(dcc.Markdown(f'''
-        * When reserves become less abundant, the elasticity of the federal funds rate to reserve changes could 
-        be negative and statistically different from zero.
+        * Daylight overdrafts occur when short-term shifts in payment activity result in a temporarily negative balance in a bank’s reserve account.
+        * Higher average overdrafts are an indication that reserves are harder to come by in amounts needed to facilitate payments without intraday credit from the Federal Reserve.
+        * Average overdrafts are much more informative for our purposes because they abstract from idiosyncratic factors that may affect individual institutions.
         * Recent references: 
-            - [Gara Afonso, Domenico Giannone, Gabriele La Spada, and John C. Williams, “Tracking Reserve Ampleness 
-            in Real Time Using Reserve Demand Elasticity,” Federal Reserve Bank of New York Liberty Street Economics, 
-            October 17, 2024]({link})
+            - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")

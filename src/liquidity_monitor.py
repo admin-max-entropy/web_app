@@ -87,7 +87,7 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
     return spread
 
 @functools.lru_cache()
-def daylight_overdraft():
+def daylight_overdraft(is_average):
     """
     :return: daylight overdraft data
     """
@@ -97,11 +97,19 @@ def daylight_overdraft():
     data = data.text.split("\n")
     start_row = 9
     result = {}
-    column_mapping = {2: "Total",
-                      3: "Funds",
-                      4: "Book-Entry",
-                      8: "Collateralized",
-                      }
+    if not is_average:
+        column_mapping = {2: "Total",
+                          3: "Funds",
+                          4: "Book-Entry",
+                          8: "Collateralized",
+                          }
+    else:
+        column_mapping = {5: "Total",
+                          6: "Funds",
+                          7: "Book-Entry",
+                          10: "Collateralized",
+                          }
+
     for inx in range(start_row, len(data)):
         row_info = data[inx]
         dummy = ' '.join(row_info.split())
