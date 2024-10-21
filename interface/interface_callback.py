@@ -47,11 +47,11 @@ def __add_qt_regime(figure, end_date):
                      annotation_position="top left",
                      fillcolor="#536878", opacity=0.25, line_width=0)
 
+    ed_str = src_config.QT_END.strftime('%Y.%m.%d') if src_config.QT_END is not None else 'Present'
     figure.add_vrect(x0=src_config.QT_START, x1=src_config.QT_END
     if src_config.QT_END is not None else end_date,
                      annotation_text=f"QT: {src_config.QT_START.strftime('%Y.%m.%d')}"
-                                     f" - {(src_config.QT_END.strftime('%Y.%m.%d') 
-                                            if src_config.QT_END is not None else 'Present')}",
+                                     f" - {ed_str}",
                      annotation_position="top left",
                      fillcolor="#536878", opacity=0.25, line_width=0)
     note = f'Last Update: {end_date.strftime("%Y.%m.%d")}'
@@ -72,11 +72,13 @@ def __iorb_figure():
     time_series = src.liquidity_monitor.iorb_effr_spread(start_date, end_date)
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"), list(time_series.keys()))),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
                                 hovertemplate=
                                 '%{y:.0f} bps <br>' +
                                 '%{text}',
-                                line={'color': interface_config.LINE_COLOR, 'width': interface_config.LINE_WIDTH},
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
                                 name="",
                                 showlegend=False))
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
@@ -114,4 +116,3 @@ def elasticity_panel():
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
-
