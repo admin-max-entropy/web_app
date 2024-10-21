@@ -1,3 +1,4 @@
+"""home layout"""
 import dash
 from dash import html
 import interface.interface_callback
