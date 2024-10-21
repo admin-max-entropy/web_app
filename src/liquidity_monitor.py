@@ -3,6 +3,7 @@
 import datetime
 import functools
 import collections
+
 import requests
 import pandas
 from src import config
@@ -84,3 +85,38 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
         if knot in effr:
             spread[knot] = (effr[knot]-iorb[knot])*100.
     return spread
+
+@functools.lru_cache()
+def daylight_overdraft():
+    """
+    :return: daylight overdraft data
+    """
+    start_date = config.TS_START_DATE
+    link = "https://www.federalreserve.gov/paymentsystems/files/psr_dlod.txt"
+    data = requests.get(link, timeout=10)
+    data = data.text.split("\n")
+    start_row = 9
+    result = {}
+    column_mapping = {2: "Total",
+                      3: "Funds",
+                      4: "Book-Entry",
+                      8: "Collateralized",
+                      }
+    for inx in range(start_row, len(data)):
+        row_info = data[inx]
+        dummy = ' '.join(row_info.split())
+        dummy = dummy.split(" ")
+        if len(dummy) != 12:
+            break
+        date = datetime.datetime.strptime(dummy[0], "%m/%d/%Y")
+        if date < start_date:
+            continue
+        for inx_, key in column_mapping.items():
+            if key not in result:
+                result[key] = {}
+            result[key][date] = float(dummy[inx_].replace(",", "").replace("$", ""))
+
+    for key, ts in result.items():
+        result[key] = dict(sorted(ts.items()))
+
+    return result

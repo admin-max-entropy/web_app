@@ -9,6 +9,35 @@ from interface import interface_utils
 from src import config as src_config
 
 
+def __overdraft_figure():
+    color_map = {"Total": "#DC143C", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
+                 "Book-Entry": "#7FFFD4"}
+    data_set = src.liquidity_monitor.daylight_overdraft()
+    figure = go.Figure()
+    end_date = None
+    ts_tmp = None
+    for key, ts in data_set.items():
+        figure.add_trace(go.Scatter(x=list(ts.keys()), y=list(ts.values()), name=key,
+                                    line={'color': color_map[key], 'width': 1.2},
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(ts.keys()))),
+                                    hovertemplate=
+                                    '%{y:.3f} bps/% <br>' +
+                                    '%{text}',
+                                    ))
+        end_date = list(ts.keys())[-1]
+        ts_tmp = ts
+
+    __add_qt_regime(figure, end_date)
+    figure.update_yaxes(title_text="Million ($)")
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
+    figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
+                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+    figure.update_layout(title="Intraday Peak Overdrafts of Deposit Institutions")
+    figure = interface_utils.format_figure(figure)
+    return figure
+
 def __elasticity_figure():
     start_date = src_config.TS_START_DATE
     data_set = src.liquidity_monitor.get_elasticity_data(start_date)
@@ -109,6 +138,26 @@ def elasticity_panel():
     :return: panel for elasticity monitor
     """
     figure = __elasticity_figure()
+    link = ("https://libertystreeteconomics.newyorkfed.org/2024/10/tracking-"
+            "reserve-ampleness-in-real-time-using-reserve-demand-elasticity/")
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(dcc.Markdown(f'''
+        * When reserves become less abundant, the elasticity of the federal funds rate to reserve changes could 
+        be negative and statistically different from zero.
+        * Recent references: 
+            - [Gara Afonso, Domenico Giannone, Gabriele La Spada, and John C. Williams, “Tracking Reserve Ampleness 
+            in Real Time Using Reserve Demand Elasticity,” Federal Reserve Bank of New York Liberty Street Economics, 
+            October 17, 2024]({link})
+''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+def overdraft_panel():
+    """
+    :return: panel for elasticity monitor
+    """
+    figure = __overdraft_figure()
     link = ("https://libertystreeteconomics.newyorkfed.org/2024/10/tracking-"
             "reserve-ampleness-in-real-time-using-reserve-demand-elasticity/")
     return dmc.Paper(children=[
