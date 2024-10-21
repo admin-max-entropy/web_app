@@ -3,6 +3,26 @@ import functools
 import collections
 import src.config as config
 import requests
+import pandas
+
+def get_elasticity_data(start_date):
+    data_link = "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
+    data = pandas.read_excel(data_link, sheet_name="chart data", skiprows=3, header=1)
+    data = data.to_dict(orient="records")
+    data_result = {}
+    for row in data:
+        date = row["Date"]
+        if date.date() < start_date.date():
+            continue
+        for key in row:
+            if key == "Date":
+                continue
+            key_ = key.split(" - ")[-1].replace("percentile", "%")
+            if key_ not in data_result:
+                data_result[key_] = {}
+            data_result[key_][date] = row[key]
+    return data_result
+
 
 def __query_format(series_id: str, start_date: datetime, end_date: datetime):
     start_date = start_date.strftime("%Y-%m-%d")
