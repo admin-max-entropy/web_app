@@ -8,5 +8,5 @@ def format_figure(figure):
     )
     figure.update_xaxes(showgrid=False)
     figure.update_yaxes(showgrid=False, zeroline=False)
-    figure.update_layout(font=dict(color="white"))
+    figure.update_layout(font=dict(color="#E0E0E0"),  margin=dict(l=60, r=0))
     return figure

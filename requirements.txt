@@ -1,6 +1,6 @@
-dash~=2.18.1
+dash==2.17.1
 pandas
 gunicorn
-requests~=2.32.3
-plotly~=5.24.1
-dash-mantine-components~=0.12.1
+requests==2.31.0
+plotly==5.24.1
+dash-mantine-components==0.12.1
