@@ -1,9 +1,9 @@
 import datetime
 import functools
 import collections
-import src.config as config
 import requests
 import pandas
+from src import config
 
 def get_elasticity_data(start_date):
     data_link = "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
@@ -37,12 +37,12 @@ def iorb_timeseries(start_date: datetime, end_date: datetime):
 
     iorb_start_date = datetime.datetime(2021, 7, 28)
     iorb_path = __query_format("IORB", iorb_start_date, end_date)
-    iorb_data = requests.get(iorb_path).json()
+    iorb_data = requests.get(iorb_path, timeout=10).json()
     for row in iorb_data["observations"]:
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
     ioer_path = __query_format("IOER", start_date, iorb_start_date)
-    ioer_data = requests.get(ioer_path).json()
+    ioer_data = requests.get(ioer_path, timeout=10).json()
     for row in ioer_data["observations"]:
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
