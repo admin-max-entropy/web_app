@@ -28,7 +28,8 @@ def get_elasticity_data(start_date):
 def __query_format(series_id: str, start_date: datetime, end_date: datetime):
     start_date = start_date.strftime("%Y-%m-%d")
     end_date = end_date.strftime("%Y-%m-%d")
-    path = (f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={config.FRED_API_KEY}"
+    path = (f"https://api.stlouisfed.org/fred/series"
+            f"/observations?series_id={series_id}&api_key={config.FRED_API_KEY}"
             f"&file_type=json&realtime_start={start_date}&realtime_end={end_date}")
     return path
 
