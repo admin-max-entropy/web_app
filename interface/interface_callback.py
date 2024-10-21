@@ -1,10 +1,10 @@
 import datetime
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
+from dash import html, dcc
 import interface.config as interface_config
 import src.liquidity_monitor
 import interface.interface_utils
-from dash import html, dcc
 import src.config as src_config
 
 
