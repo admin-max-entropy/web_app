@@ -1,3 +1,4 @@
+"""callback functions"""
 import datetime
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
