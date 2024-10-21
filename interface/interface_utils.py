@@ -1,5 +1,10 @@
+"""interface utils"""
 
 def format_figure(figure):
+    """
+    :param figure:
+    :return: formatted figure
+    """
     figure = figure.update_layout(
         {
             "paper_bgcolor": "rgba(0, 0, 0, 0)",

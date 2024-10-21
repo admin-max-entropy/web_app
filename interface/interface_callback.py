@@ -5,8 +5,8 @@ import plotly.graph_objects as go
 from dash import html, dcc
 import interface.config as interface_config
 import src.liquidity_monitor
-import interface.interface_utils
-import src.config as src_config
+from interface import interface_utils
+from src import config as src_config
 
 
 def __elasticity_figure():
@@ -36,20 +36,22 @@ def __elasticity_figure():
     figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
                                 line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
     figure.update_layout(title="Reserve Demand Elasticity")
-    figure = interface.interface_utils.format_figure(figure)
+    figure = interface_utils.format_figure(figure)
     return figure
 
 
 def __add_qt_regime(figure, end_date):
-    figure.add_vrect(x0=src_config.PREV_QT_START, x1=src.config.PREV_QT_END,
+    figure.add_vrect(x0=src_config.PREV_QT_START, x1=src_config.PREV_QT_END,
                      annotation_text=f"QT: {src_config.PREV_QT_START.strftime('%Y.%m.%d')}"
-                                     f" - {src.config.PREV_QT_END.strftime('%Y.%m.%d')}",
+                                     f" - {src_config.PREV_QT_END.strftime('%Y.%m.%d')}",
                      annotation_position="top left",
                      fillcolor="#536878", opacity=0.25, line_width=0)
 
-    figure.add_vrect(x0=src_config.QT_START, x1=src.config.QT_END if src.config.QT_END is not None else end_date,
+    figure.add_vrect(x0=src_config.QT_START, x1=src_config.QT_END
+    if src_config.QT_END is not None else end_date,
                      annotation_text=f"QT: {src_config.QT_START.strftime('%Y.%m.%d')}"
-                                     f" - {src.config.QT_END.strftime('%Y.%m.%d') if src.config.QT_END is not None else 'Present'}",
+                                     f" - {(src_config.QT_END.strftime('%Y.%m.%d') 
+                                            if src_config.QT_END is not None else 'Present')}",
                      annotation_position="top left",
                      fillcolor="#536878", opacity=0.25, line_width=0)
     note = f'Last Update: {end_date.strftime("%Y.%m.%d")}'
@@ -65,7 +67,7 @@ def __add_qt_regime(figure, end_date):
     return figure
 
 def __iorb_figure():
-    start_date = src.config.TS_START_DATE
+    start_date = src_config.TS_START_DATE
     end_date = datetime.datetime.today()
     time_series = src.liquidity_monitor.iorb_effr_spread(start_date, end_date)
     figure = go.Figure()
@@ -82,7 +84,7 @@ def __iorb_figure():
     figure.update_layout(title="EFFR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
     __add_qt_regime(figure, list(time_series.keys())[-1])
-    figure = interface.interface_utils.format_figure(figure)
+    figure = interface_utils.format_figure(figure)
     return figure
 
 def iorb_effr_panel():
@@ -112,3 +114,4 @@ def elasticity_panel():
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
+
