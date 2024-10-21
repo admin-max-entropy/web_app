@@ -6,7 +6,8 @@ import pandas
 from src import config
 
 def get_elasticity_data(start_date):
-    data_link = "https://www.newyorkfed.org/medialibrary/Research/Interactives/Data/elasticity/download-data"
+    data_link = ("https://www.newyorkfed.org/medialibrary/Research/Interactives"
+                 "/Data/elasticity/download-data")
     data = pandas.read_excel(data_link, sheet_name="chart data", skiprows=3, header=1)
     data = data.to_dict(orient="records")
     data_result = {}
@@ -53,7 +54,7 @@ def iorb_timeseries(start_date: datetime, end_date: datetime):
 @functools.lru_cache(maxsize=None)
 def effr_timeseries(start_date:datetime, end_date:datetime):
     path = __query_format("EFFR", start_date, end_date)
-    data = requests.get(path).json()
+    data = requests.get(path, timeout=10).json()
     time_series = collections.OrderedDict()
     for row in data["observations"]:
         if row["value"] == ".":
@@ -64,6 +65,11 @@ def effr_timeseries(start_date:datetime, end_date:datetime):
 
 @functools.lru_cache()
 def iorb_effr_spread(start_date:datetime, end_date:datetime):
+    """
+    :param start_date:
+    :param end_date:
+    :return: spread between effr and iorb
+    """
     iorb = iorb_timeseries(start_date, end_date)
     effr = effr_timeseries(start_date, end_date)
     spread = {}
