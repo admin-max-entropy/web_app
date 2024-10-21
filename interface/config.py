@@ -1,3 +1,3 @@
 
 LINE_COLOR = "#A7D8DE"
-LINE_WIDTH = 1.2
+LINE_WIDTH: float = 1.2

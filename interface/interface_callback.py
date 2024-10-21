@@ -18,8 +18,9 @@ def __elasticity_figure():
     ts_tmp = None
     for key, ts in data_set.items():
         figure.add_trace(go.Scatter(x=list(ts.keys()), y=list(ts.values()), name=key,
-                                    line=dict(color=color_map[key], width=1.2),
-                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"), list(ts.keys()))),
+                                    line={'color': color_map[key], 'width': 1.2},
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(ts.keys()))),
                                     hovertemplate=
                                     '%{y:.3f} bps/% <br>' +
                                     '%{text}',
@@ -29,15 +30,9 @@ def __elasticity_figure():
 
     __add_qt_regime(figure, end_date)
     figure.update_yaxes(title_text="Bps/%")
-    figure.update_layout(legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1
-    ))
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom", 'y': 1.02, 'xanchor': "right", 'x': 1})
     figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
-                                line=dict(color="grey", width=0.5), showlegend=False, name=""))
+                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
     figure.update_layout(title="Reserve Demand Elasticity")
     figure = interface.interface_utils.format_figure(figure)
     return figure
@@ -59,7 +54,7 @@ def __add_qt_regime(figure, end_date):
     figure.add_annotation(
         showarrow=False,
         text=note,
-        font=dict(size=10),
+        font={'size': 10},
         xref='x domain',
         x=0,
         yref='y domain',
@@ -77,11 +72,11 @@ def __iorb_figure():
                                 hovertemplate=
                                 '%{y:.0f} bps <br>' +
                                 '%{text}',
-                                line=dict(color=interface_config.LINE_COLOR, width=interface_config.LINE_WIDTH),
+                                line={'color': interface_config.LINE_COLOR, 'width': interface_config.LINE_WIDTH},
                                 name="",
                                 showlegend=False))
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
-                                line=dict(color="grey", width=0.5), showlegend=False, name=""))
+                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
     figure.update_layout(title="EFFR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
     __add_qt_regime(figure, list(time_series.keys())[-1])
