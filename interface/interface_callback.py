@@ -129,7 +129,8 @@ def iorb_effr_panel():
         html.Div(dcc.Markdown('''
         * When reserves become less abundant, the cost to borrow federal funds tends to increase relative to IORB.
         * Recent references: 
-            - [Perli: 2024/9/26](https://www.newyorkfed.org/newsevents/speeches/2024/per240926)
+            - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and 
+            Understanding Repo Market Pressures, 09/24/2024](https://www.newyorkfed.org/newsevents/speeches/2024/per240926)
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
