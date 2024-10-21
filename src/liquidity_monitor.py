@@ -1,3 +1,5 @@
+"""Script to load relevant data"""
+
 import datetime
 import functools
 import collections
@@ -6,6 +8,10 @@ import pandas
 from src import config
 
 def get_elasticity_data(start_date):
+    """
+    :param start_date:
+    :return: dictionary of elasticity data by percentile
+    """
     data_link = ("https://www.newyorkfed.org/medialibrary/Research/Interactives"
                  "/Data/elasticity/download-data")
     data = pandas.read_excel(data_link, sheet_name="chart data", skiprows=3, header=1)
@@ -34,7 +40,7 @@ def __query_format(series_id: str, start_date: datetime, end_date: datetime):
     return path
 
 @functools.lru_cache(maxsize=None)
-def iorb_timeseries(start_date: datetime, end_date: datetime):
+def __iorb_timeseries(start_date: datetime, end_date: datetime):
     time_series = collections.OrderedDict()
 
     iorb_start_date = datetime.datetime(2021, 7, 28)
@@ -53,7 +59,7 @@ def iorb_timeseries(start_date: datetime, end_date: datetime):
     return time_series
 
 @functools.lru_cache(maxsize=None)
-def effr_timeseries(start_date:datetime, end_date:datetime):
+def __effr_timeseries(start_date:datetime, end_date:datetime):
     path = __query_format("EFFR", start_date, end_date)
     data = requests.get(path, timeout=10).json()
     time_series = collections.OrderedDict()
@@ -71,8 +77,8 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
     :param end_date:
     :return: spread between effr and iorb
     """
-    iorb = iorb_timeseries(start_date, end_date)
-    effr = effr_timeseries(start_date, end_date)
+    iorb = __iorb_timeseries(start_date, end_date)
+    effr = __effr_timeseries(start_date, end_date)
     spread = {}
     for knot in iorb:
         if knot in effr:
