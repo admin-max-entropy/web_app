@@ -1,3 +1,4 @@
+"""app.py"""
 from dash import Dash, html, dcc, page_registry, page_container
 import dash_mantine_components as dmc
 
@@ -19,5 +20,4 @@ app.layout = dmc.MantineProvider(
 ])])
 
 if __name__ == '__main__':
-    (app.
-     run(debug=True))
+    app.run(debug=True)
