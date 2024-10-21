@@ -1,9 +1,9 @@
 import datetime
+import dash_mantine_components as dmc
+import plotly.graph_objects as go
 import interface.config as interface_config
 import src.liquidity_monitor
-import plotly.graph_objects as go
 import interface.interface_utils
-import dash_mantine_components as dmc
 from dash import html, dcc
 import src.config as src_config
 
@@ -30,7 +30,8 @@ def __elasticity_figure():
 
     __add_qt_regime(figure, end_date)
     figure.update_yaxes(title_text="Bps/%")
-    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom", 'y': 1.02, 'xanchor': "right", 'x': 1})
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
     figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
                                 line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
     figure.update_layout(title="Reserve Demand Elasticity")
