@@ -98,7 +98,7 @@ def __add_qt_regime(figure, end_date):
 
 def __iorb_figure():
     start_date = src_config.TS_START_DATE
-    end_date = datetime.datetime.today()
+    end_date = datetime.datetime(2024, 10, 21) #datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
     time_series = src.liquidity_monitor.iorb_effr_spread(start_date, end_date)
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
@@ -115,6 +115,27 @@ def __iorb_figure():
                                 line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
     figure.update_layout(title="EFFR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
+    __add_qt_regime(figure, list(time_series.keys())[-1])
+    figure = interface_utils.format_figure(figure)
+    return figure
+
+def __fedfund_figure():
+    start_date = src_config.TS_START_DATE
+    end_date = datetime.datetime(2024, 10, 21) #datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    time_series = src.liquidity_monitor.fedfund_volume_decomposition(start_date, end_date)
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.2f} % <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.update_layout(title="Domestic Bank Share of Federal Funds Borrowed")
+    figure.update_yaxes(title_text="Percent")
     __add_qt_regime(figure, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
@@ -167,6 +188,22 @@ def overdraft_panel(is_average):
         * Daylight overdrafts occur when short-term shifts in payment activity result in a temporarily negative balance in a bank’s reserve account.
         * Higher average overdrafts are an indication that reserves are harder to come by in amounts needed to facilitate payments without intraday credit from the Federal Reserve.
         * Average overdrafts are much more informative for our purposes because they abstract from idiosyncratic factors that may affect individual institutions.
+        * Recent references: 
+            - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
+''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+def fedfund_panel():
+    """
+    :return: panel for elasticity monitor
+    """
+    figure = __fedfund_figure()
+    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(dcc.Markdown(f'''
+        * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant.
         * Recent references: 
             - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],

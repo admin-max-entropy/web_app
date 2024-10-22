@@ -9,5 +9,6 @@ layout = html.Div([
     html.Div(children=[interface.interface_callback.iorb_effr_panel()], className="row"),
     html.Div(children=[interface.interface_callback.elasticity_panel()], className="row"),
     html.Div(children=[interface.interface_callback.overdraft_panel(is_average=True)], className="row"),
-    html.Div(children=[interface.interface_callback.overdraft_panel(is_average=False)], className="row")
+    html.Div(children=[interface.interface_callback.overdraft_panel(is_average=False)], className="row"),
+    html.Div(children=[interface.interface_callback.fedfund_panel()], className="row")
 ], style={"padding-left": "10px", "padding-right": "10px"})
