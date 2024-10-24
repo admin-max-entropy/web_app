@@ -1,5 +1,4 @@
 """callback functions"""
-import datetime
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc
@@ -98,7 +97,7 @@ def __add_qt_regime(figure, end_date):
 
 def __iorb_figure():
     start_date = src_config.TS_START_DATE
-    end_date = datetime.datetime(2024, 10, 21) #datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    end_date = interface_utils.end_date()
     time_series = src.liquidity_monitor.iorb_effr_spread(start_date, end_date)
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
@@ -121,7 +120,7 @@ def __iorb_figure():
 
 def __fedfund_figure():
     start_date = src_config.TS_START_DATE
-    end_date = datetime.datetime(2024, 10, 21) #datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    end_date = interface_utils.end_date()
     time_series = src.liquidity_monitor.fedfund_volume_decomposition(start_date, end_date)
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),

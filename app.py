@@ -1,23 +1,47 @@
 """app.py"""
 from dash import Dash, html, dcc, page_registry, page_container
 import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 
-app = Dash(__name__, title="Liquidity Monitor", update_title=None, use_pages=True)
+app = Dash(__name__, title="Max Entropy", update_title=None, use_pages=True)
 server = app.server
+
+
+def get_icon(name):
+    icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2"}
+    return DashIconify(icon=icon_map[name.lower()], height=16)
+
+
+sidebar = html.Div(
+            children=[
+                html.Div(dmc.NavLink(
+                label=page["name"],
+                href=page["path"],
+                icon=get_icon(page["name"]),
+                ), className="row")
+                for page in page_registry.values()
+            ], className="twelve columns",   style={"width": 240},
+)
 
 app.layout = dmc.MantineProvider(
     theme={
         "colorScheme": "dark",
     },
-    children=[html.Div([
-    html.Div([
-        html.Div(
-            #dcc.Link(f"{page['name']} - {page['path']}", href=page["relative_path"])
-            dcc.Link("", href=page["relative_path"])
-        ) for page in page_registry.values()
-    ]),
-    page_container
-])])
+    children=[
+    html.Div(
+        children=[
+            html.Div(
+                children=[
+                    sidebar
+                ], className="one columns", style={"paddingLeft": "10px", "paddingRight": "0px"}),
+
+            html.Div(
+                children=[
+                    page_container
+                ], className="eleven columns", style={"paddingLeft": "0px", "paddingRight": "10px"})
+        ]
+    )
+])
 
 if __name__ == '__main__':
     app.run(debug=True)

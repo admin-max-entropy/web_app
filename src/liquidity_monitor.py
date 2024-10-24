@@ -46,7 +46,7 @@ def __iorb_timeseries(start_date: datetime, end_date: datetime):
 
     iorb_start_date = datetime.datetime(2021, 7, 28)
     iorb_path = __query_format("IORB", iorb_start_date, end_date)
-    iorb_data = requests.get(iorb_path).json()
+    iorb_data = requests.get(iorb_path, timeout=60).json()
     for row in iorb_data["observations"]:
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
@@ -56,18 +56,20 @@ def __iorb_timeseries(start_date: datetime, end_date: datetime):
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
     time_series = dict(sorted(time_series.items()))
+    end_date = end_date.replace(tzinfo=None)
     time_series = {k: v for k, v in time_series.items() if start_date <=k <= end_date}
     return time_series
 
 @functools.lru_cache(maxsize=None)
 def __effr_timeseries(start_date:datetime, end_date:datetime):
     path = __query_format("EFFR", start_date, end_date)
-    data = requests.get(path).json()
+    data = requests.get(path, timeout=60).json()
     time_series = collections.OrderedDict()
     for row in data["observations"]:
         if row["value"] == ".":
             continue
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
+    end_date = end_date.replace(tzinfo=None)
     time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
     return time_series
 
@@ -88,10 +90,12 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
 
 @functools.lru_cache()
 def fedfund_volume_decomposition(start_date:datetime, end_date:datetime):
-    link = "https://www.newyorkfed.org/medialibrary/media/markets/rate-revisions/2024/FR2420-summary-statistics-q22024.xlsx"
+    link = ("https://www.newyorkfed.org/medialibrary/media/markets/rate-revisions"
+            "/2024/FR2420-summary-statistics-q22024.xlsx")
     data = pandas.read_excel(link, sheet_name="Effective Federal Funds Rate")
     data = data.to_dict(orient="records")
     result = {}
+    end_date = end_date.replace(tzinfo=None)
     for row in data:
         date = row["Date"]
         if date < start_date or date > end_date:
