@@ -8,7 +8,8 @@ server = app.server
 
 
 def get_icon(name):
-    icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2"}
+    icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2",
+                "money market": "fluent-mdl2:money"}
     return DashIconify(icon=icon_map[name.lower()], height=16)
 
 

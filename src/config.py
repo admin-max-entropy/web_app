@@ -9,3 +9,4 @@ QT_START = datetime.datetime(2022, 6, 1)
 QT_END = None
 
 TS_START_DATE = datetime.datetime(2017, 1, 1)
+TS_START_DATE_L = datetime.datetime(2017, 1, 1)

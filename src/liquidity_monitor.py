@@ -40,10 +40,86 @@ def __query_format(series_id: str, start_date: datetime, end_date: datetime):
             f"&file_type=json&realtime_start={start_date}&realtime_end={end_date}")
     return path
 
+@functools.lru_cache()
+def tga_balances(start_date: datetime, end_date: datetime):
+    """
+    :param start_date:
+    :param end_date:
+    :return: tga balance
+    """
+    time_series = collections.OrderedDict()
+    iorb_path = __query_format("WTREGEN", start_date, end_date)
+    iorb_data = requests.get(iorb_path, timeout=60).json()
+    for row in iorb_data["observations"]:
+        if row["value"] == ".":
+            continue
+        time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
+    time_series = dict(sorted(time_series.items()))
+    end_date = end_date.replace(tzinfo=None)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
+
+    # link = ("https://api.fiscaldata.treasury.gov/services/api/fiscal_service
+    # /v1/accounting/dts/operating_cash_balance?fields=record_date,account_type,"
+    #         "open_today_bal&filter=record_date:gte:2017-01-01,account_type:eq:T
+    #         reasury General Account (TGA) Opening Balance&page[size]=10000")
+    # data = requests.get(link).json()
+    # result = {}
+    # for row in data["data"]:
+    #     date = datetime.datetime.strptime(row["record_date"], "%Y-%m-%d")
+    #     if date not in result:
+    #         result[date] = 0
+    #     if row["open_today_bal"] == "null":
+    #         continue
+    #     result[date] += float(row["open_today_bal"])/1000
+    # time_series = dict(sorted(result.items()))
+    # end_date = end_date.replace(tzinfo=None)
+    # time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    # return time_series
+
+# data = tga_balances(datetime.datetime(2017, 1, 1), datetime.datetime(2024, 10, 23))
+
+@functools.lru_cache()
+def rrp_data(start_date:datetime, end_date:datetime):
+    """
+    :param start_date:
+    :param end_date:
+    :return: rrp data
+    """
+    time_series = collections.OrderedDict()
+    iorb_path = __query_format("RRPONTSYD", start_date, end_date)
+    iorb_data = requests.get(iorb_path, timeout=60).json()
+    for row in iorb_data["observations"]:
+        if row["value"] == ".":
+            continue
+        time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
+    time_series = dict(sorted(time_series.items()))
+    end_date = end_date.replace(tzinfo=None)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
+
+@functools.lru_cache()
+def reserve_balance_data(start_date:datetime, end_date:datetime):
+    """
+    :param start_date:
+    :param end_date:
+    :return: bank reserves
+    """
+    time_series = collections.OrderedDict()
+    iorb_path = __query_format("WRESBAL", start_date, end_date)
+    iorb_data = requests.get(iorb_path, timeout=60).json()
+    for row in iorb_data["observations"]:
+        if row["value"] == ".":
+            continue
+        time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
+    time_series = dict(sorted(time_series.items()))
+    end_date = end_date.replace(tzinfo=None)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
+
 @functools.lru_cache(maxsize=None)
 def __iorb_timeseries(start_date: datetime, end_date: datetime):
     time_series = collections.OrderedDict()
-
     iorb_start_date = datetime.datetime(2021, 7, 28)
     iorb_path = __query_format("IORB", iorb_start_date, end_date)
     iorb_data = requests.get(iorb_path, timeout=60).json()

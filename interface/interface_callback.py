@@ -118,6 +118,69 @@ def __iorb_figure():
     figure = interface_utils.format_figure(figure)
     return figure
 
+def __reserve_figure():
+    start_date = src_config.TS_START_DATE_L
+    end_date = interface_utils.end_date()
+    time_series = src.liquidity_monitor.reserve_balance_data(start_date, end_date)
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.0f} BN($) <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.update_layout(title="Reserve Balances with Federal Reserve Banks: Week Average")
+    figure.update_yaxes(title_text="Billions of U.S. Dollars")
+    __add_qt_regime(figure, list(time_series.keys())[-1])
+    figure = interface_utils.format_figure(figure)
+    return figure
+
+def __rrp_figure():
+    start_date = src_config.TS_START_DATE_L
+    end_date = interface_utils.end_date()
+    time_series = src.liquidity_monitor.rrp_data(start_date, end_date)
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.0f} BN($) <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.update_layout(title="Overnight Reverse Repurchase Agreements")
+    figure.update_yaxes(title_text="Billions of U.S. Dollars")
+    __add_qt_regime(figure, list(time_series.keys())[-1])
+    figure = interface_utils.format_figure(figure)
+    return figure
+
+def __tga_figure():
+    start_date = src_config.TS_START_DATE_L
+    end_date = interface_utils.end_date()
+    time_series = src.liquidity_monitor.tga_balances(start_date, end_date)
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.0f} BN($) <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.update_layout(title="U.S. Treasury, General Account")
+    figure.update_yaxes(title_text="Billions of U.S. Dollars")
+    __add_qt_regime(figure, list(time_series.keys())[-1])
+    figure = interface_utils.format_figure(figure)
+    return figure
+
 def __fedfund_figure():
     start_date = src_config.TS_START_DATE
     end_date = interface_utils.end_date()
@@ -209,5 +272,56 @@ def fedfund_panel():
             - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
             - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+def rrp_panel():
+    """
+       :return: panel for elasticity monitor
+       """
+    figure = __rrp_figure()
+    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+                           html.Div(dcc.Markdown(f'''
+            * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant
+            * Recent references: 
+                - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
+                - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+def reserve_panel():
+    """
+       :return: panel for elasticity monitor
+       """
+    figure = __reserve_figure()
+    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+                           html.Div(dcc.Markdown(f'''
+            * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant
+            * Recent references: 
+                - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
+                - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+def tga_panel():
+    """
+       :return: panel for elasticity monitor
+       """
+    figure = __tga_figure()
+    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+                           html.Div(dcc.Markdown(f'''
+            * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant
+            * Recent references: 
+                - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
+                - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
