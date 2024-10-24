@@ -1,5 +1,5 @@
 """interface utils"""
-from datetime import datetime, tzinfo
+from datetime import datetime
 import pytz
 
 def format_figure(figure):
@@ -19,4 +19,7 @@ def format_figure(figure):
     return figure
 
 def end_date():
+    """
+    :return: return data in EST
+    """
     return datetime(2024, 10 ,23, tzinfo=pytz.timezone('US/Eastern'))

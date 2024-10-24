@@ -51,7 +51,7 @@ def __iorb_timeseries(start_date: datetime, end_date: datetime):
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
     ioer_path = __query_format("IOER", start_date, iorb_start_date)
-    ioer_data = requests.get(ioer_path).json()
+    ioer_data = requests.get(ioer_path, timeout=60).json()
     for row in ioer_data["observations"]:
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
@@ -90,10 +90,29 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
 
 @functools.lru_cache()
 def fedfund_volume_decomposition(start_date:datetime, end_date:datetime):
-    link = ("https://www.newyorkfed.org/medialibrary/media/markets/rate-revisions"
-            "/2024/FR2420-summary-statistics-q22024.xlsx")
-    data = pandas.read_excel(link, sheet_name="Effective Federal Funds Rate")
-    data = data.to_dict(orient="records")
+    """
+    :param start_date:
+    :param end_date:
+    :return: dictionary of fedfund volume
+    """
+    year = "2024"
+    assert end_date.year<=float(year)
+    quarters=["q4", "q3", "q2"]
+
+    data = []
+    for quarter in quarters:
+        try:
+            link = ("https://www.newyorkfed.org/medialibrary/media/markets/rate-revisions"
+                    f"/{year}/FR2420-summary-statistics-{quarter}{year}.xlsx")
+            data = pandas.read_excel(link, sheet_name="Effective Federal Funds Rate")
+            data = data.to_dict(orient="records")
+
+        except ValueError as e:
+            print(str(e))
+
+        if len(data) > 0:
+            break
+
     result = {}
     end_date = end_date.replace(tzinfo=None)
     for row in data:
