@@ -144,7 +144,8 @@ def __foreign_rrp_figure():
     end_date = interface_utils.end_date()
     time_series = src.liquidity_monitor.rrp_data(start_date, end_date, "WLRRAFOIAL")
     figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(map(lambda x: x/1e3, list(time_series.values()))),
+    figure.add_trace(go.Scatter(x=list(time_series.keys()),
+                                y=list(map(lambda x: x/1e3, list(time_series.values()))),
                                 text=list(map(lambda x: x.strftime("%Y-%m-%d"),
                                               list(time_series.keys()))),
                                 hovertemplate=
@@ -154,7 +155,8 @@ def __foreign_rrp_figure():
                                       'width': interface_config.LINE_WIDTH},
                                 name="",
                                 showlegend=False))
-    figure.update_layout(title="Reverse Repurchase Agreements: Foreign Official and International Accounts: Wednesday Level")
+    figure.update_layout(title="Reverse Repurchase Agreements: Foreign Official and"
+                               " International Accounts: Wednesday Level")
     figure.update_yaxes(title_text="Billions of U.S. Dollars")
     __add_qt_regime(figure, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
