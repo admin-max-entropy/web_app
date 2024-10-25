@@ -3,16 +3,6 @@ import feedparser
 #import newspaper
 #from flask import render_template
 
-# def get_newspaper_article(link: str) -> newspaper.article.Article:
-#     article = newspaper.Article(url="%s" % (link), language='en')
-#     try:
-#         article.download()
-#         article.parse()
-#         return article
-#     except Exception as e:
-#         raise e
-#
-
 # def get_metadata(article: newspaper.article.Article) -> dict:
 #     if not article.is_parsed:
 #         raise TypeError("Article must be parsed.")
@@ -44,5 +34,4 @@ for entry in feed.entries:
     print("site_name:", preview.site_name)
     print("favicon:", preview.favicon)
     print("absolute_favicon:", preview.absolute_favicon)
-    #preview = preview_link(entry.link)
     print(entry.description)

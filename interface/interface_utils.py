@@ -33,4 +33,4 @@ def end_date():
     """
     :return: return data in EST
     """
-    return datetime(2024, 10 ,23, tzinfo=pytz.timezone('US/Eastern'))
+    return datetime.now(pytz.timezone("America/New_York")).replace(hour=0, minute=0, second=0, microsecond=0)

@@ -61,16 +61,16 @@
     width: 80%; }
   .column,
   .columns {
-    margin-left: 4%; }
+    margin-left: 0%; }
   .column:first-child,
   .columns:first-child {
     margin-left: 0; }
 
   .one.column,
-  .one.columns                    { width: 6.96666666667%; }
+  .one.columns                    { width: 8.56666666667%; }
   .two.columns                    { width: 13.3333333333%; }
   .three.columns                  { width: 22%;            }
-  .four.columns                   { width: 30.6666666667%; }
+  .four.columns                   { width: 33.2666666667%; }
   .five.columns                   { width: 39.3333333333%; }
   .six.columns                    { width: 48%;            }
   .seven.columns                  { width: 56.6666666667%; }
@@ -93,7 +93,7 @@
   .offset-by-three.column,
   .offset-by-three.columns        { margin-left: 26%;            }
   .offset-by-four.column,
-  .offset-by-four.columns         { margin-left: 34.6666666667%; }
+  .offset-by-four.columns         { margin-left: 0.6666666667%; }
   .offset-by-five.column,
   .offset-by-five.columns         { margin-left: 43.3333333333%; }
   .offset-by-six.column,

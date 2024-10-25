@@ -9,7 +9,8 @@ server = app.server
 
 def get_icon(name):
     icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2",
-                "money market": "fluent-mdl2:money"}
+                "money market": "fluent-mdl2:money",
+                "central bank feeds": "jam:rss-feed"}
     return DashIconify(icon=icon_map[name.lower()], height=16)
 
 
@@ -34,7 +35,7 @@ app.layout = dmc.MantineProvider(
             html.Div(
                 children=[
                     sidebar
-                ], className="one columns", style={"paddingLeft": "10px", "paddingRight": "0px"}),
+                ], className="one columns", style={"paddingLeft": "10px", "paddingRight": "10px"}),
 
             html.Div(
                 children=[
