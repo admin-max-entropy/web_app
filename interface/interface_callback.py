@@ -139,10 +139,31 @@ def __reserve_figure():
     figure = interface_utils.format_figure(figure)
     return figure
 
+def __foreign_rrp_figure():
+    start_date = src_config.TS_START_DATE_L
+    end_date = interface_utils.end_date()
+    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, "WLRRAFOIAL")
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(map(lambda x: x/1e3, list(time_series.values()))),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.0f} BN($) <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.update_layout(title="Reverse Repurchase Agreements: Foreign Official and International Accounts: Wednesday Level")
+    figure.update_yaxes(title_text="Billions of U.S. Dollars")
+    __add_qt_regime(figure, list(time_series.keys())[-1])
+    figure = interface_utils.format_figure(figure)
+    return figure
+
 def __rrp_figure():
     start_date = src_config.TS_START_DATE_L
     end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.rrp_data(start_date, end_date)
+    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, "RRPONTSYD")
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
                                 text=list(map(lambda x: x.strftime("%Y-%m-%d"),
@@ -159,6 +180,38 @@ def __rrp_figure():
     __add_qt_regime(figure, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
+
+def __sofr_figure():
+    start_date = src_config.TS_START_DATE_L
+    end_date = interface_utils.end_date()
+    data_set = src.liquidity_monitor.get_short_end_timeseries("SOFR", start_date, end_date)
+    figure = go.Figure()
+
+    color_map = {"SOFR": "crimson", "1%": "#4BAAC8", "99%": "#4BAAC8",
+                 "25%": "#C0C0C0", "75%": "#C0C0C0"}
+
+    last_date = None
+    for key, time_series in data_set.items():
+        key= interface_utils.rename_key(key)
+        key= key.replace("SOFR ", "")
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(time_series.keys()))),
+                                    hovertemplate=
+                                    '%{y:.2f} % <br>' +
+                                    '%{text}',
+                                    name=key, line={'color': color_map[key], 'dash': "solid",
+                                                    'width': interface_config.LINE_WIDTH}))
+        last_date = list(time_series.keys())[-1]
+
+    figure.update_layout(title="SOFR - RRP Spreads")
+    figure.update_yaxes(title_text="Percent")
+    __add_qt_regime(figure, last_date)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
+    figure = interface_utils.format_figure(figure)
+    return figure
+
 
 def __tga_figure():
     start_date = src_config.TS_START_DATE_L
@@ -280,14 +333,29 @@ def rrp_panel():
        :return: panel for elasticity monitor
        """
     figure = __rrp_figure()
-    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown(f'''
-            * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant
+                           html.Div(dcc.Markdown('''
+            * Liability of Fed Reserve's balance sheet.
+            * Currently, RRP is used as a tool to help keep the federal funds rate in the target range established by the FOMC.
+            * We tend to see RRP balances increase over quarter-end, due to the banks refrain from intermediations on 
+            repo trades with Money Market Funds at quarter ends.
             * Recent references: 
-                - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
-                - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+                - [Kansas City Fed, Rapid Declines in the Fed’s Overnight Reverse Repurchase (ON RRP) Facility May Start to Slow, 11/10/2023]({link})
+    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+def foreign_rrp_panel():
+    """
+       :return: panel for elasticity monitor
+       """
+    figure = __foreign_rrp_figure()
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+                           html.Div(dcc.Markdown('''
+            * Liability of Fed Reserve's balance sheet.
+            * Federal Reserve conducts overnight reverse repos with foreign official and international institutions, including foreign central banks. 
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
@@ -297,14 +365,13 @@ def reserve_panel():
        :return: panel for elasticity monitor
        """
     figure = __reserve_figure()
-    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown(f'''
-            * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant
-            * Recent references: 
-                - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
-                - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+                           html.Div(dcc.Markdown('''
+            * Liability of Fed Reserve's balance sheet.
+            * More than 5,000 depository institutions maintain accounts at the Federal Reserve Banks.
+            * When the Federal Reserve buys securities, either outright or via a repurchase agreement (repo), the level of deposits increases.
+            * When the Federal Reserve lends, the level of deposits increases as the amount the institution borrows is credited to its Federal Reserve Accounts.
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")
@@ -314,14 +381,32 @@ def tga_panel():
        :return: panel for elasticity monitor
        """
     figure = __tga_figure()
-    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown(f'''
-            * Domestic banks tend to borrow federal funds when they need liquidity, increased activity on their part would be a sign of reserves becoming less abundant
-            * Recent references: 
-                - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
-                - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+                           html.Div(dcc.Markdown('''
+            * Liability of Fed Reserve's balance sheet.
+            * Major outlays of the Treasury are paid from the Treasury's general account at the Federal Reserve.
+            * A decline in the balances held in the TGA results in an increase in the deposits 
+              of depository institutions, all else being equal. 
+            * Conversely, funds that flow into the TGA, such as from a tax payment, 
+              drain balances from the deposits of depository institutions. 
+    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs")
+
+
+def sofr_panel():
+    """
+        :return: panel for elasticity monitor
+    """
+    figure = __sofr_figure()
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+                           html.Div(dcc.Markdown('''
+            * SOFR is a broad measure of the cost of borrowing cash overnight collateralized by Treasury securities. 
+            * SOFR includes all trades in BGCR + bilateral Treasury repo cleared through DVP offered by FICC, which is 
+            filtered to remove "specials".
+            * SOFR is calculated as a volume-weighted median of transaction-level tri-party repo data + GCF Repo transaction data + bilateral Treasury repo transactions cleared through FICC's DVP service.
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs")

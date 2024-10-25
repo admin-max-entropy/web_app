@@ -3,6 +3,7 @@
 import datetime
 import functools
 import collections
+import math
 
 import requests
 import pandas
@@ -40,54 +41,47 @@ def __query_format(series_id: str, start_date: datetime, end_date: datetime):
             f"&file_type=json&realtime_start={start_date}&realtime_end={end_date}")
     return path
 
+def __fetch_tga_balances(key):
+    link = (
+        "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting"
+        "/dts/operating_cash_balance?fields=record_date,account_type,"
+        f"open_today_bal&filter=record_date:gte:2017-01-01,account_type:eq:{key}&page[size]=10000")
+    data = requests.get(link, timeout=60).json()
+    result = {}
+    for row in data["data"]:
+        date = datetime.datetime.strptime(row["record_date"], "%Y-%m-%d")
+        if date not in result:
+            result[date] = 0
+        if row["open_today_bal"] == "null":
+            continue
+        result[date] += float(row["open_today_bal"]) / 1000
+    time_series = dict(sorted(result.items()))
+    return time_series
+
 @functools.lru_cache()
 def tga_balances(start_date: datetime, end_date: datetime):
     """
     :param start_date:
     :param end_date:
-    :return: tga balance
+    :return: return daily GTA balances
     """
-    time_series = collections.OrderedDict()
-    iorb_path = __query_format("WTREGEN", start_date, end_date)
-    iorb_data = requests.get(iorb_path, timeout=60).json()
-    for row in iorb_data["observations"]:
-        if row["value"] == ".":
-            continue
-        time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
+    time_series = __fetch_tga_balances("Treasury General Account (TGA)")
+    time_series.update(__fetch_tga_balances("Treasury General Account (TGA) Opening Balance"))
+    time_series.update(__fetch_tga_balances("Federal Reserve Account"))
     time_series = dict(sorted(time_series.items()))
     end_date = end_date.replace(tzinfo=None)
     time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
     return time_series
 
-    # link = ("https://api.fiscaldata.treasury.gov/services/api/fiscal_service
-    # /v1/accounting/dts/operating_cash_balance?fields=record_date,account_type,"
-    #         "open_today_bal&filter=record_date:gte:2017-01-01,account_type:eq:T
-    #         reasury General Account (TGA) Opening Balance&page[size]=10000")
-    # data = requests.get(link).json()
-    # result = {}
-    # for row in data["data"]:
-    #     date = datetime.datetime.strptime(row["record_date"], "%Y-%m-%d")
-    #     if date not in result:
-    #         result[date] = 0
-    #     if row["open_today_bal"] == "null":
-    #         continue
-    #     result[date] += float(row["open_today_bal"])/1000
-    # time_series = dict(sorted(result.items()))
-    # end_date = end_date.replace(tzinfo=None)
-    # time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
-    # return time_series
-
-# data = tga_balances(datetime.datetime(2017, 1, 1), datetime.datetime(2024, 10, 23))
-
 @functools.lru_cache()
-def rrp_data(start_date:datetime, end_date:datetime):
+def rrp_data(start_date:datetime, end_date:datetime, key:str):
     """
     :param start_date:
     :param end_date:
     :return: rrp data
     """
     time_series = collections.OrderedDict()
-    iorb_path = __query_format("RRPONTSYD", start_date, end_date)
+    iorb_path = __query_format(key, start_date, end_date)
     iorb_data = requests.get(iorb_path, timeout=60).json()
     for row in iorb_data["observations"]:
         if row["value"] == ".":
@@ -241,3 +235,71 @@ def daylight_overdraft(is_average):
         result[key] = dict(sorted(ts.items()))
 
     return result
+
+@functools.lru_cache()
+def __data_in_bulk():
+    url = "https://data.financialresearch.gov/v1/series/dataset?dataset=fnyr"
+    data = requests.get(url, timeout=60)
+    data_set = data.json()
+    return data_set["timeseries"]
+
+def __key_set():
+    result = {}
+    for key in ["SOFR", "EFFR", "BGCR", "TGCR"]:
+        result[key] = [f"FNYR-{key}-A", f"FNYR-{key}_1Pctl-A", f"FNYR-{key}_25Pctl-A",
+                       f"FNYR-{key}_75Pctl-A", f"FNYR-{key}_99Pctl-A"]
+    return result
+
+
+@functools.lru_cache()
+def __rrp_rate(start_date:datetime, end_date:datetime):
+    time_series = collections.OrderedDict()
+    iorb_path = __query_format("RRPONTSYAWARD", start_date, end_date)
+    iorb_data = requests.get(iorb_path, timeout=60).json()
+    end_date = end_date.replace(tzinfo=None)
+
+    for row in iorb_data["observations"]:
+        if row["value"] == ".":
+            continue
+        date = datetime.datetime.strptime(row["date"], "%Y-%m-%d")
+        if start_date <= date <= end_date:
+            time_series[date] = float(row["value"])
+    return time_series
+
+
+@functools.lru_cache()
+def get_short_end_timeseries(data_key, start_date, end_date):
+    """
+    :param data_key:
+    :param start_date:
+    :param end_date:
+    :return: short end rates timeseries
+    """
+    data_in_bulk = __data_in_bulk()
+    rate_ts_set = {}
+    data_keys = __key_set()[data_key]
+
+    rrp_rate = __rrp_rate(start_date, end_date)
+    for key in data_in_bulk:
+        if key not in data_keys:
+            continue
+        raw_data = data_in_bulk[key]["timeseries"]
+        time_series = {}
+        for row in raw_data["aggregation"]:
+            date = datetime.datetime.strptime(row[0], "%Y-%m-%d")
+            if date < start_date:
+                continue
+            if date not in rrp_rate:
+                continue
+            if row[1] is None:
+                continue
+            time_series[date] = row[1] - rrp_rate[date]
+        for date in rrp_rate:
+            if date not in time_series:
+                if date > start_date:
+                    time_series[date] = math.nan
+
+        time_series = dict(sorted(time_series.items()))
+        rate_ts_set[key] = time_series
+
+    return rate_ts_set

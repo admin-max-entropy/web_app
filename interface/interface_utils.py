@@ -2,6 +2,21 @@
 from datetime import datetime
 import pytz
 
+def rename_key(key):
+    key = key.replace("FNYR-", "")
+    key = key.replace("Pctl", "%")
+    key = key.replace("-A", "")
+    key = key.replace("_", " ")
+    return key
+
+def line_style_from_key(key):
+    if "1%" in key or "99%" in key:
+        return "lightblue", "dot"
+    elif "25%" in key or "75%" in key:
+        return "green", "dot"
+    else:
+        return "crimson", "solid"
+
 def format_figure(figure):
     """
     :param figure:
