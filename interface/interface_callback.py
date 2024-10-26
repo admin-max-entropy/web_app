@@ -10,7 +10,6 @@ from src import config as src_config
 import pages.config
 import feedparser
 from dash_iconify import DashIconify
-from bs4 import BeautifulSoup
 
 def __get_researches(values):
 

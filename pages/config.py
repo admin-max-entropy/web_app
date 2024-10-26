@@ -1,5 +1,4 @@
 """config for pages layout"""
-from prompt_toolkit.application import AppSession
 
 APP_ID_IORB_EFFR_GRAPH = "app_id_iorb_effr"
 APP_ID_SPEECHES = "app_id_speeches"
