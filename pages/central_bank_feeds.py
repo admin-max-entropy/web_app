@@ -4,7 +4,7 @@ import dash
 from dash import html, Output, callback, Input
 import dash_mantine_components as dmc
 import pages.config
-import interface.interface_utils as interface_utils
+from interface import interface_utils
 
 dash.register_page(__name__)
 
@@ -24,7 +24,8 @@ layout =  dmc.MantineProvider(
     [
         dmc.MultiSelect(
             id=pages.config.APP_ID_SPEECHES,
-            value=list(map(lambda x: x["value"], interface_utils.fed_rss_tags(interface_utils.fed_central_bankers()))),
+            value=list(map(lambda x: x["value"],
+                           interface_utils.fed_rss_tags(interface_utils.fed_central_bankers()))),
             data=interface_utils.fed_rss_tags(interface_utils.fed_central_bankers()),
             searchable=True,
             persistence=True,
