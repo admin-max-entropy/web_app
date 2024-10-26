@@ -10,6 +10,7 @@ from src import config as src_config
 import pages.config
 import feedparser
 from dash_iconify import DashIconify
+from bs4 import BeautifulSoup
 
 def __get_researches(values):
 
@@ -29,7 +30,6 @@ def __get_researches(values):
 
             date_eastern = interface_utils.convert_fed_rss_time(entry.published)
             card = dmc.TimelineItem(title= date_eastern.strftime("%a, %d %b %Y %H:%M"),
-
             children=[
                 dmc.Group(
                     [
@@ -40,7 +40,7 @@ def __get_researches(values):
                     mb="xs",
                 ),
                 dmc.Text(
-                    entry.description,
+                    interface_utils.get_text_content(entry),
                     size="sm",
                     c="dimmed",
                 ),
@@ -59,8 +59,9 @@ def __get_researches(values):
         )
             links[date_eastern] = card
 
-    links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
+        links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
     return dmc.Timeline(children=list(links.values()))
+
 
 def __get_policy_updates(values):
 
@@ -143,7 +144,7 @@ def __get_speeches(values):
                     mb="xs",
                 ),
                 dmc.Text(
-                    entry.description,
+                    entry.description, #interface_utils.get_text_content(entry),
                     size="sm",
                     c="dimmed",
                 ),

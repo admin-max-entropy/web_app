@@ -1,7 +1,7 @@
 
 """home layout"""
 import dash
-from dash import html, Output, callback, Input
+from dash import html
 import dash_mantine_components as dmc
 import pages.config
 from interface import interface_utils

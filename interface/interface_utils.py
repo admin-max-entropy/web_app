@@ -1,9 +1,8 @@
 """interface utils"""
-from datetime import datetime
-from tkinter.font import names
-
+from datetime import datetime, timedelta
 import pytz
 import pages.config
+import bs4
 
 
 def rename_key(key):
@@ -37,7 +36,10 @@ def end_date():
     """
     :return: return data in EST
     """
-    return datetime.now(pytz.timezone("America/New_York")).replace(hour=0, minute=0, second=0, microsecond=0)
+    current_time = datetime.now(pytz.timezone("America/New_York")).replace(hour=0, minute=0, second=0, microsecond=0)
+    if current_time <= current_time.replace(hour=6):
+        return current_time + timedelta(days=-1)
+    return current_time
 
 def fed_rss_tags(names_map):
     data = []
@@ -54,6 +56,16 @@ def fed_central_bankers():
                  pages.config.AKUGLER: "https://www.federalreserve.gov/feeds/s_t_kugler.xml",
                  pages.config.LCOOK: "https://www.federalreserve.gov/feeds/s_t_cook.xml"}
     return names_map
+
+def get_text_content(entry):
+    soup = bs4.BeautifulSoup(entry.summary, features="html.parser")
+    text = ""
+    for tag in soup.find_all("br"):
+        for row in tag.next_siblings:
+            text += row.get_text()
+        return text
+
+
 
 def fed_cb_images():
     names_map = {pages.config.JPOW: "https://www.federalreservehistory.org/-/media/images/powell_jerome.jpg",
