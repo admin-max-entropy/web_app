@@ -1,12 +1,190 @@
 """callback functions"""
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
-from dash import html, dcc
+from dash import html, dcc, Output, callback, Input
 import interface.config as interface_config
 import src.liquidity_monitor
 from interface import interface_utils
+from interface.interface_utils import fed_cb_policy, fed_research_feeds, fed_research_color
 from src import config as src_config
+import pages.config
+import feedparser
+from dash_iconify import DashIconify
 
+def __get_researches(values):
+
+    names_map = fed_research_feeds()
+    color_map = fed_research_color()
+
+    links = {}
+
+    for name, url in names_map.items():
+
+        if name not in values:
+            continue
+
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries:
+
+            date_eastern = interface_utils.convert_fed_rss_time(entry.published)
+            card = dmc.TimelineItem(title= date_eastern.strftime("%a, %d %b %Y %H:%M"),
+
+            children=[
+                dmc.Group(
+                    [
+                        dmc.Badge(name, color=color_map[name], radius="xl", size="sm"),
+                        dmc.Text(entry.title, fw=500),
+                    ],
+                    mt="md",
+                    mb="xs",
+                ),
+                dmc.Text(
+                    entry.description,
+                    size="sm",
+                    c="dimmed",
+                ),
+                html.Div(
+                    children=[
+                html.Div(dmc.Anchor(
+                    dmc.Button(
+                    "",
+                    variant="subtle",
+                    leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
+                    color="blue",
+                    size="sm", fullWidth=True,
+                ), href=entry.link, target="_blank"), className="two columns")], className="row"),
+            ],
+            w=700,
+        )
+            links[date_eastern] = card
+
+    links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
+    return dmc.Timeline(children=list(links.values()))
+
+def __get_policy_updates(values):
+
+    names_map = fed_cb_policy()
+    color_map = interface_utils.fed_cb_policy_color()
+    links = {}
+
+    for name, url in names_map.items():
+
+        if name not in values:
+            continue
+
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries:
+
+            date_eastern = interface_utils.convert_fed_rss_time(entry.published)
+            card = dmc.TimelineItem(title=date_eastern.strftime("%a, %d %b %Y %H:%M"),
+                                    children=[
+                                        dmc.Group(
+                                            [
+                                                dmc.Badge(name, color=color_map[name],
+                                                          radius="xl", size="sm",
+                                                         variant="filled"),
+                                                dmc.Text(entry.title, fw=500),
+                                            ],
+                                            mt="md",
+                                            mb="xs",
+                                        ),
+                                        dmc.Text(
+                                            entry.description,
+                                            size="sm",
+                                            c="dimmed",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                html.Div(dmc.Anchor(
+                                                    dmc.Button(
+                                                        "",
+                                                        variant="subtle",
+                                                        leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
+                                                        color="blue",
+                                                        size="sm", fullWidth=True,
+                                                    ), href=entry.link, target="_blank"), className="two columns")],
+                                            className="row"),
+                                    ],
+                                    w=700,
+                                    )
+            links[date_eastern] = card
+
+    links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
+    return dmc.Timeline(children=list(links.values()))
+
+def __get_speeches(values):
+
+    names_map = interface_utils.fed_central_bankers()
+    images = interface_utils.fed_cb_images()
+    links = {}
+
+    for name, url in names_map.items():
+
+        if name not in values:
+            continue
+
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries:
+
+            date_eastern = interface_utils.convert_fed_rss_time(entry.published)
+            card = dmc.TimelineItem(title= date_eastern.strftime("%a, %d %b %Y %H:%M"),
+
+            children=[
+                dmc.Group(
+                    [
+                        dmc.Avatar(src=images[name],
+                                   color="cyan", radius="xl", size="sm"),
+                        dmc.Text(entry.title, fw=500),
+                    ],
+                    mt="md",
+                    mb="xs",
+                ),
+                dmc.Text(
+                    entry.description,
+                    size="sm",
+                    c="dimmed",
+                ),
+                html.Div(
+                    children=[
+                html.Div(dmc.Anchor(
+                    dmc.Button(
+                    "",
+                    variant="subtle",
+                    leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
+                    color="blue",
+                    size="sm", fullWidth=True,
+                ), href=entry.link, target="_blank"), className="two columns")], className="row"),
+            ],
+            w=700,
+        )
+            links[date_eastern] = card
+
+    links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
+    return dmc.Timeline(children=list(links.values()))
+
+@callback(
+    Output(component_id=pages.config.APP_ID_SPEECH_CARDS, component_property='children'),
+    Input(component_id=pages.config.APP_ID_SPEECHES, component_property='value')
+)
+def update_output_div(input_value):
+    return __get_speeches(input_value)
+
+@callback(
+    Output(component_id=pages.config.APP_ID_POLICY_CARDS, component_property='children'),
+    Input(component_id=pages.config.APP_ID_POLICY, component_property='value')
+)
+def update_output_div(input_value):
+    return __get_policy_updates(input_value)
+
+@callback(
+    Output(component_id=pages.config.APP_ID_RESEARCH_CARDS, component_property='children'),
+    Input(component_id=pages.config.APP_ID_RESEARCH, component_property='value')
+)
+def update_output_div(input_value):
+    return __get_researches(input_value)
 
 def __overdraft_figure(is_average):
     color_map = {"Total": "#DC143C", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
