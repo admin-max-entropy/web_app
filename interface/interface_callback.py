@@ -107,7 +107,6 @@ def __get_policy_updates(values):
                                                     ), href=entry.link, target="_blank"), className="two columns")],
                                             className="row"),
                                     ],
-                                    w=700,
                                     )
             links[date_eastern] = card
 

@@ -67,7 +67,7 @@
     margin-left: 0; }
 
   .one.column,
-  .one.columns                    { width: 8.56666666667%; }
+  .one.columns                    { width: 9.56666666667%; }
   .two.columns                    { width: 13.3333333333%; }
   .three.columns                  { width: 22%;            }
   .four.columns                   { width: 33.2666666667%; }
@@ -77,7 +77,7 @@
   .eight.columns                  { width: 65.3333333333%; }
   .nine.columns                   { width: 74.0%;          }
   .ten.columns                    { width: 82.6666666667%; }
-  .eleven.columns                 { width: 88.3333333333%; }
+  .eleven.columns                 { width: 89.3333333333%; }
   .twelve.columns                 { width: 98%; margin-left: 0; }
 
   .one-third.column               { width: 30.6666666667%; }
@@ -189,7 +189,6 @@ input[type="button"] {
   font-weight: 600;
   line-height: 38px;
   letter-spacing: .1rem;
-  text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
   background-color: transparent;

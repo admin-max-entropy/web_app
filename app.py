@@ -1,4 +1,5 @@
 """app.py"""
+from click import style
 from dash import Dash, html, dcc, page_registry, page_container
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
@@ -22,7 +23,8 @@ sidebar = html.Div(
                 icon=get_icon(page["name"]),
                 ), className="row")
                 for page in page_registry.values()
-            ], className="twelve columns",   style={"width": 240},
+            ],
+    className="twelve columns",
 )
 
 app.layout = dmc.MantineProvider(
@@ -35,10 +37,16 @@ app.layout = dmc.MantineProvider(
             html.Div(
                 children=[
                     sidebar
-                ], className="one columns", style={"paddingLeft": "10px", "paddingRight": "10px"}),
+                ], className="one columns", style={"paddingLeft": "30px", "paddingRight": "10px"}),
 
             html.Div(
-                children=[
+                children= [html.Div(dmc.Affix(
+    dmc.Group(children=[DashIconify(icon="mdi-light:email", width=25,
+                                    color="#90d5ff"), dmc.Text("admin@max-entropy.com",
+                                                                                color="#90d5ff", variant="transit")]),
+                    position={"top": 0, "right": 40}),
+className="eleven columns", style={"paddingLeft": "0px", "paddingRight": "10px"}
+)]+[
                     page_container
                 ], className="eleven columns", style={"paddingLeft": "0px", "paddingRight": "10px"})
         ]
