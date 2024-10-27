@@ -10,6 +10,7 @@ from src import config as src_config
 import pages.config
 import feedparser
 from dash_iconify import DashIconify
+import src.data_utils
 
 def __get_researches(values):
 
@@ -118,6 +119,7 @@ def __get_speeches(values):
     names_map = interface_utils.fed_central_bankers()
     images = interface_utils.fed_cb_images()
     links = {}
+    ai_collection = src.data_utils.fed_speech_collection()
 
     for name, url in names_map.items():
 
@@ -128,6 +130,7 @@ def __get_speeches(values):
 
         for entry in feed.entries:
 
+            ai_info = ai_collection.find_one(dict(url=entry.link))
             date_eastern = interface_utils.convert_fed_rss_time(entry.published)
             card = dmc.TimelineItem(title= date_eastern.strftime("%a, %d %b %Y %H:%M"),
 
@@ -155,7 +158,28 @@ def __get_speeches(values):
                     leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
                     color="blue",
                     size="sm", fullWidth=True,
-                ), href=entry.link, target="_blank"), className="two columns")], className="row"),
+                ), href=entry.link, target="_blank"), className="two columns"),
+                        html.Div(dmc.HoverCard(
+                            withArrow=True,
+                            width=500,
+                            shadow="md",
+                            children=[
+                                dmc.HoverCardTarget(dmc.Button("",
+                                                               leftIcon=DashIconify(icon="ri:openai-fill", width=20,
+                                                                                    color="teal"),
+                                                               color="teal",
+                                                               size="sm",
+                                                               variant="subtle",
+                                                               )),
+                                dmc.HoverCardDropdown(
+                                    dmc.Text(
+                                        "" if ai_info is None else ai_info["summary"],
+                                        size="sm",
+                                    )
+                                ),
+                            ],
+                        ), className="two columns"),
+                    ], className="row"),
             ],
             w=700,
         )
