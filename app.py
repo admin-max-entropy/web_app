@@ -2,6 +2,7 @@
 from dash import Dash, html, dcc, page_registry, page_container
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
+from streamlit.web.cli import activate
 
 app = Dash(__name__, title="Max Entropy", update_title=None, use_pages=True)
 server = app.server
@@ -10,21 +11,63 @@ server = app.server
 def get_icon(name):
     icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2",
                 "money market": "fluent-mdl2:money",
-                "central bank feeds": "jam:rss-feed"}
+                "central bank feeds": "jam:rss-feed",
+                "united states": "twemoji:flag-united-states"}
     return DashIconify(icon=icon_map[name.lower()], height=16)
 
+def __create_page_structure():
+    result = {}
+    for page in list(page_registry.values()):
+        path = page["path"]
+        sub_path = path.split("/")
+        assert(len(sub_path) in [2, 3])
+        root = sub_path[1]
+        if len(sub_path) == 2:
+            result[root] = []
+        else:
+            if root not in result:
+                result[root] = []
+            result[root] += [page]
+    return result
 
-sidebar = html.Div(
-            children=[
-                html.Div(dmc.NavLink(
-                label=page["name"],
-                href=page["path"],
+def create_sidebar():
+
+    children = []
+    page_structure = __create_page_structure()
+
+    for page in list(page_registry.values()):
+        path = page["path"]
+        sub_path = path.split("/")
+        root = sub_path[1]
+        data = page_structure[root]
+
+        if len(data) > 0:
+            page_children = []
+            for sub_page in data:
+                page_children += [dmc.NavLink(
+                    label=sub_page["name"].title(),
+                    href=sub_page["path"],
+                    icon=get_icon(sub_page["name"]))]
+
+            component = html.Div(
+                dmc.NavLink(
+                label=root.replace("-", " ").title(),
+                icon=get_icon(root.replace("-", " ")),
+                children=page_children,
+                opened=True,
+            ))
+            children.append(component)
+        elif len(data) == 0:
+            component = html.Div(dmc.NavLink(
+                label=page["name"].title(),
+                href=path,
                 icon=get_icon(page["name"]),
                 ), className="row")
-                for page in page_registry.values()
-            ],
-    className="twelve columns",
-)
+            children.append(component)
+        else:
+            raise RuntimeError("unsupported page type")
+    return html.Div(children=children, className="twelve columns")
+
 
 app.layout = dmc.MantineProvider(
     theme={
@@ -35,7 +78,7 @@ app.layout = dmc.MantineProvider(
         children=[
             html.Div(
                 children=[
-                    sidebar
+                    create_sidebar()
                 ], className="one columns", style={"paddingLeft": "30px", "paddingRight": "10px"}),
 
             html.Div(
