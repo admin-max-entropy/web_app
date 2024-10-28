@@ -29,8 +29,8 @@ def format_figure(figure):
     )
     figure.update_xaxes(showgrid=False)
     figure.update_yaxes(showgrid=False, zeroline=False)
-    figure.update_layout(font={'color': "#E0E0E0"}, margin={'l': 60, 'r': 20, "t": 50,'b': 0}, title_x=0)
-    figure.update_layout(height=298)
+    figure.update_layout(font={'color': "#E0E0E0"}, margin={'l': 60, 'r': 20, "t": 50,'b': 40}, title_x=0)
+    figure.update_layout(height=297)
     return figure
 
 def end_date():
