@@ -1,5 +1,4 @@
 """app.py"""
-from click import style
 from dash import Dash, html, dcc, page_registry, page_container
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify

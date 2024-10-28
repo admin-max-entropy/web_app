@@ -1,6 +1,7 @@
 """home layout"""
 import dash
 from dash import html
+
 import interface.interface_callback
 dash.register_page(__name__)
 

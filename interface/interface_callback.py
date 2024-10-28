@@ -473,7 +473,7 @@ def iorb_effr_panel():
             - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 def elasticity_panel():
     """
@@ -493,7 +493,7 @@ def elasticity_panel():
             10/17/2024]({link})
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 def overdraft_panel(is_average):
     """
@@ -508,11 +508,11 @@ def overdraft_panel(is_average):
         * Higher average overdrafts are an indication that reserves are harder to come by in amounts needed to facilitate payments without intraday credit from the Federal Reserve.
         * Average overdrafts are much more informative for our purposes because they abstract from idiosyncratic factors that may affect individual institutions.
         * Recent references: 
-            - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/24/2024]({link})
             - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
-                 className="row"),
-    ], shadow="xs")
+                 className="row"
+                 ),
+    ], shadow="xs", bg="black")
 
 def fedfund_panel():
     """
@@ -529,7 +529,7 @@ def fedfund_panel():
             - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 def rrp_panel():
     """
@@ -547,7 +547,7 @@ def rrp_panel():
                 - [Kansas City Fed, Rapid Declines in the Fed’s Overnight Reverse Repurchase (ON RRP) Facility May Start to Slow, 11/10/2023]({link})
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 def foreign_rrp_panel():
     """
@@ -561,7 +561,7 @@ def foreign_rrp_panel():
             * Federal Reserve conducts overnight reverse repos with foreign official and international institutions, including foreign central banks. 
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 def reserve_panel():
     """
@@ -577,7 +577,7 @@ def reserve_panel():
             * When the Federal Reserve lends, the level of deposits increases as the amount the institution borrows is credited to its Federal Reserve Accounts.
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 def tga_panel():
     """
@@ -595,7 +595,7 @@ def tga_panel():
               drain balances from the deposits of depository institutions. 
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
 
 
 def sofr_panel():
@@ -612,4 +612,4 @@ def sofr_panel():
             * SOFR is calculated as a volume-weighted median of transaction-level tri-party repo data + GCF Repo transaction data + bilateral Treasury repo transactions cleared through FICC's DVP service.
     ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs")
+    ], shadow="xs", bg="black")
