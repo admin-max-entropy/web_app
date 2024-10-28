@@ -16,7 +16,7 @@ def rename_key(key):
     key = key.replace("_", " ")
     return key
 
-def format_figure(figure):
+def format_figure(figure, show_x_range=False):
     """
     :param figure:
     :return: formatted figure
@@ -31,6 +31,10 @@ def format_figure(figure):
     figure.update_yaxes(showgrid=False, zeroline=False)
     figure.update_layout(font={'color': "#E0E0E0"}, margin={'l': 60, 'r': 20, "t": 50,'b': 40}, title_x=0)
     figure.update_layout(height=297)
+    if show_x_range:
+        figure.update_layout(xaxis=dict(rangeslider = dict(
+            visible=True
+        )))
     return figure
 
 def end_date():

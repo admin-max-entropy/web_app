@@ -1,4 +1,6 @@
 """callback functions"""
+from datetime import tzinfo
+
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc, Output, callback, Input
@@ -11,6 +13,7 @@ import pages.config
 import feedparser
 from dash_iconify import DashIconify
 import src.data_utils
+import datetime
 
 def __get_researches(values):
 
@@ -210,7 +213,7 @@ def update_output_div(input_value):
     return __get_researches(input_value)
 
 def __overdraft_figure(is_average):
-    color_map = {"Total": "#DC143C", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
+    color_map = {"Total": "#ad0034", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
                  "Book-Entry": "#7FFFD4"}
     data_set = src.liquidity_monitor.daylight_overdraft(is_average)
     figure = go.Figure()
@@ -242,7 +245,7 @@ def __overdraft_figure(is_average):
 def __elasticity_figure():
     start_date = src_config.TS_START_DATE
     data_set = src.liquidity_monitor.get_elasticity_data(start_date)
-    color_map = {"50th % (main)": "#DC143C", "2.5th %": "#4BAAC8", "97.5th %": "#4BAAC8",
+    color_map = {"50th % (main)": "#ad0034", "2.5th %": "#4BAAC8", "97.5th %": "#4BAAC8",
                  "16th %": "#C0C0C0", "84th %": "#C0C0C0"}
     figure = go.Figure()
     end_date = None
@@ -385,12 +388,15 @@ def __rrp_figure():
     return figure
 
 def __sofr_figure():
-    start_date = src_config.TS_START_DATE_L
+    #start_date = src_config.TS_START_DATE_L
     end_date = interface_utils.end_date()
+    end_date = end_date.replace(tzinfo=None)
+    start_date = end_date + datetime.timedelta(days=-150)
+
     data_set = src.liquidity_monitor.get_short_end_timeseries("SOFR", start_date, end_date)
     figure = go.Figure()
 
-    color_map = {"SOFR": "crimson", "1%": "#4BAAC8", "99%": "#4BAAC8",
+    color_map = {"SOFR": "#ad0034", "1%": "#4BAAC8", "99%": "#4BAAC8",
                  "25%": "#C0C0C0", "75%": "#C0C0C0"}
 
     last_date = None
@@ -409,10 +415,10 @@ def __sofr_figure():
 
     figure.update_layout(title="SOFR - RRP Spreads")
     figure.update_yaxes(title_text="Percent")
-    __add_qt_regime(figure, last_date)
+    #__add_qt_regime(figure, last_date)
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
-    figure = interface_utils.format_figure(figure)
+    figure = interface_utils.format_figure(figure, show_x_range=False)
     return figure
 
 
@@ -500,7 +506,6 @@ def overdraft_panel(is_average):
     :return: panel for elasticity monitor
     """
     figure = __overdraft_figure(is_average)
-    link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(dcc.Markdown(f'''
