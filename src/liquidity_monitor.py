@@ -120,10 +120,11 @@ def __iorb_timeseries(start_date: datetime, end_date: datetime):
     for row in iorb_data["observations"]:
         time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
-    ioer_path = __query_format("IOER", start_date, iorb_start_date)
-    ioer_data = requests.get(ioer_path, timeout=60).json()
-    for row in ioer_data["observations"]:
-        time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
+    if start_date < iorb_start_date:
+        ioer_path = __query_format("IOER", start_date, iorb_start_date)
+        ioer_data = requests.get(ioer_path, timeout=60).json()
+        for row in ioer_data["observations"]:
+            time_series[datetime.datetime.strptime(row["date"], "%Y-%m-%d")] = float(row["value"])
 
     time_series = dict(sorted(time_series.items()))
     end_date = end_date.replace(tzinfo=None)
@@ -156,6 +157,39 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
     for knot in iorb:
         if knot in effr:
             spread[knot] = (effr[knot]-iorb[knot])*100.
+    return spread
+
+@functools.lru_cache()
+def iorb_tgcr_spread(start_date:datetime, end_date:datetime):
+    """
+    :param start_date:
+    :param end_date:
+    :return: spread between effr and iorb
+    """
+    iorb = __iorb_timeseries(start_date, end_date)
+    tgcr = get_short_end_timeseries("TGCR", start_date, end_date, apply_spread=False)["FNYR-TGCR-A"]
+
+    spread = {}
+    for knot in iorb:
+        if knot in tgcr:
+            spread[knot] = (tgcr[knot]-iorb[knot])*100.
+    return spread
+
+
+@functools.lru_cache()
+def iorb_sofr_spread(start_date:datetime, end_date:datetime):
+    """
+    :param start_date:
+    :param end_date:
+    :return: spread between effr and iorb
+    """
+    iorb = __iorb_timeseries(start_date, end_date)
+    tgcr = get_short_end_timeseries("SOFR", start_date, end_date, apply_spread=False)["FNYR-SOFR-A"]
+
+    spread = {}
+    for knot in iorb:
+        if knot in tgcr:
+            spread[knot] = (tgcr[knot]-iorb[knot])*100.
     return spread
 
 @functools.lru_cache()
@@ -268,7 +302,7 @@ def __rrp_rate(start_date:datetime, end_date:datetime):
 
 
 @functools.lru_cache()
-def get_short_end_timeseries(data_key, start_date, end_date):
+def get_short_end_timeseries(data_key, start_date, end_date, apply_spread=True):
     """
     :param data_key:
     :param start_date:
@@ -289,11 +323,15 @@ def get_short_end_timeseries(data_key, start_date, end_date):
             date = datetime.datetime.strptime(row[0], "%Y-%m-%d")
             if date < start_date:
                 continue
-            if date not in rrp_rate:
-                continue
             if row[1] is None:
                 continue
-            time_series[date] = row[1] - rrp_rate[date]
+            if apply_spread:
+                if date not in rrp_rate:
+                    continue
+                time_series[date] = row[1] - rrp_rate[date]
+            else:
+                time_series[date] = row[1]
+
         for date in rrp_rate:
             if date not in time_series:
                 if date > start_date:
@@ -303,3 +341,7 @@ def get_short_end_timeseries(data_key, start_date, end_date):
         rate_ts_set[key] = time_series
 
     return rate_ts_set
+
+# date = datetime.datetime(2020, 1, 1)
+# end_date = datetime.datetime(2024, 9, 25)
+# iorb_tgcr_spread(date, end_date)

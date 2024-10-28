@@ -3,7 +3,10 @@ from datetime import tzinfo
 
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
+from bs4.builder import HTML_5
 from dash import html, dcc, Output, callback, Input
+from sklearn.linear_model import Hinge
+
 import interface.config as interface_config
 import src.liquidity_monitor
 from interface import interface_utils
@@ -273,20 +276,21 @@ def __elasticity_figure():
     return figure
 
 
-def __add_qt_regime(figure, end_date):
-    figure.add_vrect(x0=src_config.PREV_QT_START, x1=src_config.PREV_QT_END,
-                     annotation_text=f"QT: {src_config.PREV_QT_START.strftime('%Y.%m.%d')}"
-                                     f" - {src_config.PREV_QT_END.strftime('%Y.%m.%d')}",
-                     annotation_position="top left",
-                     fillcolor="#536878", opacity=0.25, line_width=0)
+def __add_qt_regime(figure, end_date, add_regime=True):
+    if add_regime:
+        figure.add_vrect(x0=src_config.PREV_QT_START, x1=src_config.PREV_QT_END,
+                         annotation_text=f"QT: {src_config.PREV_QT_START.strftime('%Y.%m.%d')}"
+                                         f" - {src_config.PREV_QT_END.strftime('%Y.%m.%d')}",
+                         annotation_position="top left",
+                         fillcolor="#536878", opacity=0.25, line_width=0)
 
-    ed_str = src_config.QT_END.strftime('%Y.%m.%d') if src_config.QT_END is not None else 'Present'
-    figure.add_vrect(x0=src_config.QT_START, x1=src_config.QT_END
-    if src_config.QT_END is not None else end_date,
-                     annotation_text=f"QT: {src_config.QT_START.strftime('%Y.%m.%d')}"
-                                     f" - {ed_str}",
-                     annotation_position="top left",
-                     fillcolor="#536878", opacity=0.25, line_width=0)
+        ed_str = src_config.QT_END.strftime('%Y.%m.%d') if src_config.QT_END is not None else 'Present'
+        figure.add_vrect(x0=src_config.QT_START, x1=src_config.QT_END
+        if src_config.QT_END is not None else end_date,
+                         annotation_text=f"QT: {src_config.QT_START.strftime('%Y.%m.%d')}"
+                                         f" - {ed_str}",
+                         annotation_position="top left",
+                         fillcolor="#536878", opacity=0.25, line_width=0)
     note = f'Last Update: {end_date.strftime("%Y.%m.%d")}'
     figure.add_annotation(
         showarrow=False,
@@ -297,6 +301,54 @@ def __add_qt_regime(figure, end_date):
         yref='y domain',
         y=-0.2
     )
+    return figure
+
+def __tgcr_iorb_figure():
+    end_date = interface_utils.end_date()
+    start_date = end_date + datetime.timedelta(days=-250)
+    start_date = start_date.replace(tzinfo=None)
+    time_series = src.liquidity_monitor.iorb_tgcr_spread(start_date, end_date)
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.0f} bps <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+    figure.update_layout(title="TGCR-IORB Spread")
+    figure.update_yaxes(title_text="Bps")
+    __add_qt_regime(figure, list(time_series.keys())[-1], add_regime=False)
+    figure = interface_utils.format_figure(figure)
+    return figure
+
+def __sofr_iorb_figure():
+    end_date = interface_utils.end_date()
+    start_date = end_date + datetime.timedelta(days=-250)
+    start_date = start_date.replace(tzinfo=None)
+    time_series = src.liquidity_monitor.iorb_sofr_spread(start_date, end_date)
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.0f} bps <br>' +
+                                '%{text}',
+                                line={'color': interface_config.LINE_COLOR,
+                                      'width': interface_config.LINE_WIDTH},
+                                name="",
+                                showlegend=False))
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+    figure.update_layout(title="SOFR-IORB Spread")
+    figure.update_yaxes(title_text="Bps")
+    __add_qt_regime(figure, list(time_series.keys())[-1], add_regime=False)
+    figure = interface_utils.format_figure(figure)
     return figure
 
 def __iorb_figure():
@@ -391,7 +443,7 @@ def __sofr_figure():
     #start_date = src_config.TS_START_DATE_L
     end_date = interface_utils.end_date()
     end_date = end_date.replace(tzinfo=None)
-    start_date = end_date + datetime.timedelta(days=-150)
+    start_date = end_date + datetime.timedelta(days=-250)
 
     data_set = src.liquidity_monitor.get_short_end_timeseries("SOFR", start_date, end_date)
     figure = go.Figure()
@@ -415,7 +467,7 @@ def __sofr_figure():
 
     figure.update_layout(title="SOFR - RRP Spreads")
     figure.update_yaxes(title_text="Percent")
-    #__add_qt_regime(figure, last_date)
+    __add_qt_regime(figure, last_date, add_regime=False)
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
     figure = interface_utils.format_figure(figure, show_x_range=False)
@@ -471,13 +523,56 @@ def iorb_effr_panel():
     figure = __iorb_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-        html.Div(dcc.Markdown('''
+        html.Div(children=[
+            html.Div(dcc.Markdown('''
         * When reserves become less abundant, the cost to borrow federal funds tends to increase relative to IORB.
         * Recent references: 
             - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and 
             Understanding Repo Market Pressures, 09/24/2024](https://www.newyorkfed.org/newsevents/speeches/2024/per240926)
             - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
-''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
+''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
+def iorb_tgcr_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __tgcr_iorb_figure()
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+            html.Div(dcc.Markdown('''
+        * Weather the money market rates trade below IOER is a sign of liquidity condition.
+        * The tri-party general collateral rate (TGCR) are repos secured by Treasury securities.
+        * Reserves and Treasury repos are both essentially risk-free overnight assets, but the reserves are more liquid.
+        * The spread of IORB over TGCR indicates reserves remain in relatively excess supply compared with other liquid assets.
+        * Recent references: 
+            - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
+
+def iorb_sofr_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __sofr_iorb_figure()
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+            html.Div(dcc.Markdown('''
+        * The secured overnight financing rate (SOFR) includes a broader set of Treasury repo transactions than TGCR.
+        * Some SOFR transactions include compensation for intermediating funds from the triparty segment to cash borrowers who lack direct access to that segment.
+        * Hence, the TGCR-IOER spread could be a cleaner read of on the liquidity conditions in the secured market.
+        * This widening of SOFR and TGCR at month-end is resulted from the limited balance sheet availability at dealers that intermediate between the triparty and centrally cleared market segments.
+         * Recent references: 
+            - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+''',   link_target="_blank"),className="row")
+                          ], className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -543,14 +638,16 @@ def rrp_panel():
     figure = __rrp_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown('''
-            * Liability of Fed Reserve's balance sheet.
+                           html.Div(
+                               children=[
+                                   html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                               html.Div(dcc.Markdown('''
             * Currently, RRP is used as a tool to help keep the federal funds rate in the target range established by the FOMC.
             * We tend to see RRP balances increase over quarter-end, due to the banks refrain from intermediations on 
             repo trades with Money Market Funds at quarter ends.
             * Recent references: 
                 - [Kansas City Fed, Rapid Declines in the Fed’s Overnight Reverse Repurchase (ON RRP) Facility May Start to Slow, 11/10/2023]({link})
-    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+    ''', link_target="_blank", ), className="row")], className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -561,10 +658,14 @@ def foreign_rrp_panel():
     figure = __foreign_rrp_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown('''
-            * Liability of Fed Reserve's balance sheet.
+                           html.Div(
+                               children=[
+                                   html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+
+                                   html.Div(dcc.Markdown('''
             * Federal Reserve conducts overnight reverse repos with foreign official and international institutions, including foreign central banks. 
-    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+    ''', link_target="_blank", ), className="row")],
+                               className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -575,12 +676,14 @@ def reserve_panel():
     figure = __reserve_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown('''
-            * Liability of Fed Reserve's balance sheet.
+                           html.Div(children=[
+                               html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                               html.Div(dcc.Markdown('''
             * More than 5,000 depository institutions maintain accounts at the Federal Reserve Banks.
             * When the Federal Reserve buys securities, either outright or via a repurchase agreement (repo), the level of deposits increases.
             * When the Federal Reserve lends, the level of deposits increases as the amount the institution borrows is credited to its Federal Reserve Accounts.
-    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+    ''', link_target="_blank", ), className="row")],
+                               className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -591,14 +694,16 @@ def tga_panel():
     figure = __tga_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown('''
-            * Liability of Fed Reserve's balance sheet.
+                           html.Div(children=[
+                               html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                               html.Div(dcc.Markdown('''
             * Major outlays of the Treasury are paid from the Treasury's general account at the Federal Reserve.
             * A decline in the balances held in the TGA results in an increase in the deposits 
               of depository institutions, all else being equal. 
             * Conversely, funds that flow into the TGA, such as from a tax payment, 
               drain balances from the deposits of depository institutions. 
-    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+    ''', link_target="_blank", ), className="row")],
+                               className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -610,11 +715,15 @@ def sofr_panel():
     figure = __sofr_figure()
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(dcc.Markdown('''
+                           html.Div(
+                               children=[
+                                   html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                                   html.Div(dcc.Markdown('''
             * SOFR is a broad measure of the cost of borrowing cash overnight collateralized by Treasury securities. 
             * SOFR includes all trades in BGCR + bilateral Treasury repo cleared through DVP offered by FICC, which is 
             filtered to remove "specials".
             * SOFR is calculated as a volume-weighted median of transaction-level tri-party repo data + GCF Repo transaction data + bilateral Treasury repo transactions cleared through FICC's DVP service.
-    ''', link_target="_blank", ), className="four columns", style={"padding-top": "20px"})],
+    ''', link_target="_blank", ), className="row")],
+                               className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
