@@ -1,12 +1,7 @@
 """callback functions"""
-from datetime import tzinfo
-
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
-from bs4.builder import HTML_5
 from dash import html, dcc, Output, callback, Input
-from sklearn.linear_model import Hinge
-
 import interface.config as interface_config
 import src.liquidity_monitor
 from interface import interface_utils

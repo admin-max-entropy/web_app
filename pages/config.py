@@ -16,6 +16,7 @@ MBOW = "Michelle Bowman"
 LCOOK = "Lisa Cook"
 AKUGLER = "Adriana Kugler"
 CWALLER = "Christopher Waller"
+LOGAN = "Lorie Logan"
 
 MONETARY_POLICY = "Monetary Policy"
 BANKING_REGULATION = "Banking Regulation"

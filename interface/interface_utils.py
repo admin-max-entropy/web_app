@@ -59,7 +59,9 @@ def fed_central_bankers():
                  pages.config.PJEFF: "https://www.federalreserve.gov/feeds/s_t_jefferson.xml",
                  pages.config.MBOW: "https://www.federalreserve.gov/feeds/m_w_Bowman.xml",
                  pages.config.AKUGLER: "https://www.federalreserve.gov/feeds/s_t_kugler.xml",
-                 pages.config.LCOOK: "https://www.federalreserve.gov/feeds/s_t_cook.xml"}
+                 pages.config.LCOOK: "https://www.federalreserve.gov/feeds/s_t_cook.xml",
+                 pages.config.LOGAN: "https://www.dallasfed.org/rss/speeches.xml",
+                 }
     return names_map
 
 def get_text_content(entry):
@@ -79,7 +81,8 @@ def fed_cb_images():
                  pages.config.PJEFF: "https://www.federalreservehistory.org/-/media/images/Jefferson_Phillip.jpg",
                  pages.config.MBOW: "https://www.federalreservehistory.org/-/media/images/bowman_michelle.jpg",
                  pages.config.AKUGLER: "https://www.federalreservehistory.org/-/media/images/Kugler_Adriana.jpg",
-                 pages.config.LCOOK: "https://www.federalreservehistory.org/-/media/images/Cook_Lisa.jpg"
+                 pages.config.LCOOK: "https://www.federalreservehistory.org/-/media/images/Cook_Lisa.jpg",
+                 pages.config.LOGAN: "https://www.federalreservehistory.org/-/media/images/Logan_Lorie.jpg",
                  }
     return names_map
 
@@ -112,9 +115,18 @@ def fed_cb_policy_color():
 
 
 def convert_fed_rss_time(input_time):
-    gmt = pytz.timezone('GMT')
+
+    if "GMT" in input_time:
+        tz_name = 'GMT'
+        tz = pytz.timezone(tz_name)
+    elif "CST" in input_time:
+        tz_name = "CST"
+        tz = pytz.timezone("US/Central")
+    else:
+        raise RuntimeError("unsupported time format")
+
     eastern = pytz.timezone('US/Eastern')
-    date = datetime.strptime(input_time, "%a, %d %b %Y %H:%M:%S GMT")
-    date_gmt = gmt.localize(date)
-    date_eastern = date_gmt.astimezone(eastern)
+    date = datetime.strptime(input_time, f"%a, %d %b %Y %H:%M:%S {tz_name}")
+    date_tz = tz.localize(date)
+    date_eastern = date_tz.astimezone(eastern)
     return date_eastern

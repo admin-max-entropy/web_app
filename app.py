@@ -2,7 +2,6 @@
 from dash import Dash, html, dcc, page_registry, page_container
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
-from streamlit.web.cli import activate
 
 app = Dash(__name__, title="Max Entropy", update_title=None, use_pages=True)
 server = app.server
