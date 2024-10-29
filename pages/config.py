@@ -17,6 +17,7 @@ LCOOK = "Lisa Cook"
 AKUGLER = "Adriana Kugler"
 CWALLER = "Christopher Waller"
 LOGAN = "Lorie Logan"
+JWILLAIM = "John Williams"
 
 MONETARY_POLICY = "Monetary Policy"
 BANKING_REGULATION = "Banking Regulation"

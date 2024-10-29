@@ -1,11 +1,10 @@
 """app.py"""
-from dash import Dash, html, dcc, page_registry, page_container
+from dash import Dash, html, page_registry, page_container
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
 app = Dash(__name__, title="Max Entropy", update_title=None, use_pages=True)
 server = app.server
-
 
 def get_icon(name):
     icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2",
@@ -86,7 +85,7 @@ app.layout = dmc.MantineProvider(
                                     color="#90d5ff"), dmc.Text("admin@max-entropy.com",
                                                                                 color="#90d5ff", variant="transit")]),
                     position={"top": 0, "right": 40}),
-className="eleven columns", style={"paddingLeft": "0px", "paddingRight": "10px"}
+                    className="eleven columns", style={"paddingLeft": "0px", "paddingRight": "10px"}
 )]+[
                     page_container
                 ], className="eleven columns", style={"paddingLeft": "0px", "paddingRight": "10px"})

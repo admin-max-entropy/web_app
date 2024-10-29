@@ -2,6 +2,8 @@
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc, Output, callback, Input
+from streamlit import container
+
 import interface.config as interface_config
 import src.liquidity_monitor
 from interface import interface_utils
@@ -127,26 +129,24 @@ def __get_speeches(values):
         if name not in values:
             continue
 
-        feed = feedparser.parse(url)
+        content = ai_collection.find(dict(author=name))
 
-        for entry in feed.entries:
+        for entry in content:
 
-            ai_info = ai_collection.find_one(dict(url=entry.link))
-            date_eastern = interface_utils.convert_fed_rss_time(entry.published)
-            card = dmc.TimelineItem(title= date_eastern.strftime("%a, %d %b %Y %H:%M"),
+            card = dmc.TimelineItem(title= entry["date"].strftime("%a, %d %b %Y %H:%M"),
 
             children=[
                 dmc.Group(
                     [
                         dmc.Avatar(src=images[name],
                                    color="cyan", radius="xl", size="sm"),
-                        dmc.Text(entry.title, fw=500),
+                        dmc.Text(entry["title"], fw=500),
                     ],
                     mt="md",
                     mb="xs",
                 ),
                 dmc.Text(
-                    entry.description, #interface_utils.get_text_content(entry),
+                    entry["description"], #interface_utils.get_text_content(entry),
                     size="sm",
                     c="dimmed",
                 ),
@@ -159,7 +159,7 @@ def __get_speeches(values):
                     leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
                     color="blue",
                     size="sm", fullWidth=True,
-                ), href=entry.link, target="_blank"), className="two columns"),
+                ), href=entry["url"], target="_blank"), className="two columns"),
                         html.Div(dmc.HoverCard(
                             withArrow=True,
                             width=500,
@@ -174,7 +174,7 @@ def __get_speeches(values):
                                                                )),
                                 dmc.HoverCardDropdown(
                                     dmc.Text(
-                                        "" if ai_info is None else ai_info["summary"],
+                                        entry["summary"],
                                         size="sm",
                                     )
                                 ),
@@ -184,7 +184,7 @@ def __get_speeches(values):
             ],
             w=700,
         )
-            links[date_eastern] = card
+            links[entry["date"]] = card
 
     links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
     return dmc.Timeline(children=list(links.values()))
