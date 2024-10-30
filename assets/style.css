@@ -67,7 +67,7 @@
     margin-left: 0; }
 
   .one.column,
-  .one.columns                    { width: 11.06666666667%; }
+  .one.columns                    { width: 14.06666666667%; }
   .two.columns                    { width: 10.3333333333%; }
   .three.columns                  { width: 22%;            }
   .four.columns                   { width: 33.2666666667%; }
@@ -77,7 +77,7 @@
   .eight.columns                  { width: 65.3333333333%; }
   .nine.columns                   { width: 74.0%;          }
   .ten.columns                    { width: 82.6666666667%; }
-  .eleven.columns                 { width: 88.3333333333%; }
+  .eleven.columns                 { width: 85.3333333333%; }
   .twelve.columns                 { width: 98%; margin-left: 0; }
 
   .one-third.column               { width: 30.6666666667%; }

@@ -12,7 +12,6 @@ import pages.config
 import feedparser
 from dash_iconify import DashIconify
 import src.data_utils
-import datetime
 
 def __get_researches(values):
 
@@ -57,7 +56,6 @@ def __get_researches(values):
                     size="sm", fullWidth=True,
                 ), href=entry.link, target="_blank"), className="two columns")], className="row"),
             ],
-            w=700,
         )
             links[date_eastern] = card
 
@@ -181,7 +179,6 @@ def __get_speeches(values):
                         ), className="two columns"),
                     ], className="row"),
             ],
-            w=700,
         )
             links[entry["date"]] = card
 
@@ -215,6 +212,7 @@ def __overdraft_figure(is_average):
     data_set = src.liquidity_monitor.daylight_overdraft(is_average)
     figure = go.Figure()
     end_date = None
+    start_date = None
     ts_tmp = None
     for key, ts in data_set.items():
         figure.add_trace(go.Scatter(x=list(ts.keys()), y=list(ts.values()), name=key,
@@ -226,9 +224,10 @@ def __overdraft_figure(is_average):
                                     '%{text}',
                                     ))
         end_date = list(ts.keys())[-1]
+        start_date = list(ts.keys())[0]
         ts_tmp = ts
 
-    __add_qt_regime(figure, end_date)
+    __add_qt_regime(figure, start_date, end_date)
     figure.update_yaxes(title_text="Million ($)")
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
@@ -259,7 +258,7 @@ def __elasticity_figure():
         end_date = list(ts.keys())[-1]
         ts_tmp = ts
 
-    __add_qt_regime(figure, end_date)
+    __add_qt_regime(figure, start_date, end_date)
     figure.update_yaxes(title_text="Bps/%")
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
@@ -270,9 +269,9 @@ def __elasticity_figure():
     return figure
 
 
-def __add_qt_regime(figure, end_date, add_regime=True):
+def __add_qt_regime(figure, start_date, end_date, add_regime=True):
     if add_regime:
-        figure.add_vrect(x0=src_config.PREV_QT_START, x1=src_config.PREV_QT_END,
+        figure.add_vrect(x0=max(start_date, src_config.PREV_QT_START), x1=src_config.PREV_QT_END,
                          annotation_text=f"QT: {src_config.PREV_QT_START.strftime('%Y.%m.%d')}"
                                          f" - {src_config.PREV_QT_END.strftime('%Y.%m.%d')}",
                          annotation_position="top left",
@@ -297,52 +296,211 @@ def __add_qt_regime(figure, end_date, add_regime=True):
     )
     return figure
 
-def __tgcr_iorb_figure():
+def __color_map():
+    color_map = {"": "#ad0034", " 1%": "#4BAAC8", " 99%": "#4BAAC8",
+                 " 25%": "#C0C0C0", " 75%": "#C0C0C0"}
+    return color_map
+
+def __bgcr_iorb_figure():
     end_date = interface_utils.end_date()
-    start_date = end_date + datetime.timedelta(days=-250)
-    start_date = start_date.replace(tzinfo=None)
-    time_series = src.liquidity_monitor.iorb_tgcr_spread(start_date, end_date)
+    start_date = src_config.TS_START_DATE_L
+    cap = 80
+    floor = -20
+    time_series_set = src.liquidity_monitor.iorb_bgcr_spread(start_date, end_date, cap, floor)
     figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} bps <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
-                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
-    figure.update_layout(title="TGCR-IORB Spread")
+
+    last_date = None
+    for key, time_series in time_series_set.items():
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(time_series.keys()))),
+                                    hovertemplate=
+                                    '%{y:.0f} bps <br>' +
+                                    '%{text}',
+                                    line={'color': __color_map()[interface_utils.rename_key(key).replace("BGCR", "")],
+                                          'width': interface_config.LINE_WIDTH},
+                                    name=interface_utils.rename_key(key)))
+
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [cap],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [floor],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        last_date = list(time_series.keys())[-1]
+
+    figure.update_layout(title="BGCR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
-    __add_qt_regime(figure, list(time_series.keys())[-1], add_regime=False)
+    __add_qt_regime(figure, start_date, last_date, add_regime=True)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
     figure = interface_utils.format_figure(figure)
+    return figure
+
+def __rate_to_iorb_figure(key_input):
+    end_date = interface_utils.end_date()
+    start_date = src_config.TS_START_DATE_L
+    cap = 80
+    floor = -20
+    if key_input == "tgcr":
+        time_series_set = src.liquidity_monitor.iorb_tgcr_spread(start_date, end_date, cap, floor)
+    elif key_input == "sofr":
+        time_series_set = src.liquidity_monitor.iorb_sofr_spread(start_date, end_date, cap, floor)
+    elif key_input == "bgcr":
+        time_series_set = src.liquidity_monitor.iorb_bgcr_spread(start_date, end_date, cap, floor)
+    elif key_input == "effr":
+        time_series_set = src.liquidity_monitor.iorb_fedfund_spread(start_date, end_date, cap, floor)
+    elif key_input == "obfr":
+        time_series_set = src.liquidity_monitor.iorb_obfr_spread(start_date, end_date, cap, floor)
+
+    else:
+        raise RuntimeError("unsupported key"
+                           )
+    figure = go.Figure()
+
+    last_date = None
+    time_series = None
+
+    for key, time_series in time_series_set.items():
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(time_series.keys()))),
+                                    hovertemplate=
+                                    '%{y:.0f} bps <br>' +
+                                    '%{text}',
+                                    line={'color': __color_map()[interface_utils.rename_key(key).replace(key_input.upper(), "")],
+                                          'width': interface_config.LINE_WIDTH},
+                                    name=interface_utils.rename_key(key)))
+        last_date = list(time_series.keys())[-1]
+
+    rrp_spread = src.liquidity_monitor.iorb_rrp_spread(start_date, end_date)
+    upper_spread = src.liquidity_monitor.iorb_upper_spread(start_date, end_date)
+    lower_spread = src.liquidity_monitor.iorb_lower_spread(start_date, end_date)
+
+    figure.add_trace(go.Scatter(x=list(lower_spread.keys()), y=list(lower_spread.values()),
+                                line={'color': "#00A86B", 'width': 0.8, "dash": "dot"},
+                                name="LB"))
+    figure.add_trace(go.Scatter(x=list(rrp_spread.keys()), y=list(rrp_spread.values()),
+                                line={'color': "#FF7F50", 'width': 0.8, "dash": "dot"},
+                                name="RRP"))
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                line={'color': "#FF7F50", 'width': 0.8, "dash": "dot"},
+                                name="IORB"))
+    figure.add_trace(go.Scatter(x=list(upper_spread.keys()), y=list(upper_spread.values()),
+                                line={'color': "#00A86B", 'width': 0.8, "dash": "dot"},
+                                name="UB"))
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [cap],
+                                line={'color': "grey", 'width': 0.3}, showlegend=False, name=""))
+    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [floor],
+                                line={'color': "grey", 'width': 0.3}, showlegend=False, name=""))
+    figure.update_layout(title=f"{key_input.upper()}-IORB Spread")
+    figure.update_yaxes(title_text="Bps")
+    __add_qt_regime(figure, start_date, last_date, add_regime=True)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
+    figure = interface_utils.format_figure(figure)
+    return figure
+
+def __obfr_iorb_figure():
+    end_date = interface_utils.end_date()
+    start_date = src_config.TS_START_DATE_L
+    cap = 80
+    floor = -20
+    time_series_set = src.liquidity_monitor.iorb_obfr_spread(start_date, end_date, cap, floor)
+    figure = go.Figure()
+
+    last_date = None
+    for key, time_series in time_series_set.items():
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(time_series.keys()))),
+                                    hovertemplate=
+                                    '%{y:.0f} bps <br>' +
+                                    '%{text}',
+                                    line={'color': __color_map()[interface_utils.rename_key(key).replace("OBFR", "")],
+                                          'width': interface_config.LINE_WIDTH},
+                                    name=interface_utils.rename_key(key)))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [cap],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [floor],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        last_date = list(time_series.keys())[-1]
+    figure.update_layout(title="OBFR-IORB Spread")
+    figure.update_yaxes(title_text="Bps")
+    __add_qt_regime(figure, start_date, last_date, add_regime=True)
+    figure = interface_utils.format_figure(figure)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
+    return figure
+
+def __ff_iorb_figure():
+    end_date = interface_utils.end_date()
+    start_date = src_config.TS_START_DATE_L
+    cap = 80
+    floor = -20
+    time_series_set = src.liquidity_monitor.iorb_fedfund_spread(start_date, end_date, cap, floor)
+    figure = go.Figure()
+
+    last_date = None
+    for key, time_series in time_series_set.items():
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(time_series.keys()))),
+                                    hovertemplate=
+                                    '%{y:.0f} bps <br>' +
+                                    '%{text}',
+                                    line={'color': __color_map()[interface_utils.rename_key(key).replace("EFFR", "")],
+                                          'width': interface_config.LINE_WIDTH},
+                                    name=interface_utils.rename_key(key)))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [cap],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [floor],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        last_date = list(time_series.keys())[-1]
+    figure.update_layout(title="EFFR-IORB Spread")
+    figure.update_yaxes(title_text="Bps")
+    __add_qt_regime(figure, start_date, last_date, add_regime=True)
+    figure = interface_utils.format_figure(figure)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
     return figure
 
 def __sofr_iorb_figure():
     end_date = interface_utils.end_date()
-    start_date = end_date + datetime.timedelta(days=-250)
-    start_date = start_date.replace(tzinfo=None)
-    time_series = src.liquidity_monitor.iorb_sofr_spread(start_date, end_date)
+    start_date = src_config.TS_START_DATE_L
+    cap = 80
+    floor = -20
+    time_series_set = src.liquidity_monitor.iorb_sofr_spread(start_date, end_date, cap, floor)
     figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} bps <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
-                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+
+    last_date = None
+    for key, time_series in time_series_set.items():
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                                  list(time_series.keys()))),
+                                    hovertemplate=
+                                    '%{y:.0f} bps <br>' +
+                                    '%{text}',
+                                    line={'color': __color_map()[interface_utils.rename_key(key).replace("SOFR", "")],
+                                          'width': interface_config.LINE_WIDTH},
+                                    name=interface_utils.rename_key(key)))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [cap],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [floor],
+                                    line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
+        last_date = list(time_series.keys())[-1]
     figure.update_layout(title="SOFR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
-    __add_qt_regime(figure, list(time_series.keys())[-1], add_regime=False)
+    __add_qt_regime(figure, start_date, last_date, add_regime=True)
     figure = interface_utils.format_figure(figure)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
     return figure
 
 def __iorb_figure():
@@ -364,7 +522,7 @@ def __iorb_figure():
                                 line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
     figure.update_layout(title="EFFR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
-    __add_qt_regime(figure, list(time_series.keys())[-1])
+    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
 
@@ -385,7 +543,7 @@ def __reserve_figure():
                                 showlegend=False))
     figure.update_layout(title="Reserve Balances with Federal Reserve Banks: Week Average")
     figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, list(time_series.keys())[-1])
+    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
 
@@ -408,7 +566,7 @@ def __foreign_rrp_figure():
     figure.update_layout(title="Reverse Repurchase Agreements: Foreign Official and"
                                " International Accounts: Wednesday Level")
     figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, list(time_series.keys())[-1])
+    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
 
@@ -429,44 +587,9 @@ def __rrp_figure():
                                 showlegend=False))
     figure.update_layout(title="Overnight Reverse Repurchase Agreements")
     figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, list(time_series.keys())[-1])
+    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
-
-def __sofr_figure():
-    #start_date = src_config.TS_START_DATE_L
-    end_date = interface_utils.end_date()
-    end_date = end_date.replace(tzinfo=None)
-    start_date = end_date + datetime.timedelta(days=-250)
-
-    data_set = src.liquidity_monitor.get_short_end_timeseries("SOFR", start_date, end_date)
-    figure = go.Figure()
-
-    color_map = {"SOFR": "#ad0034", "1%": "#4BAAC8", "99%": "#4BAAC8",
-                 "25%": "#C0C0C0", "75%": "#C0C0C0"}
-
-    last_date = None
-    for key, time_series in data_set.items():
-        key= interface_utils.rename_key(key)
-        key= key.replace("SOFR ", "")
-        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                                  list(time_series.keys()))),
-                                    hovertemplate=
-                                    '%{y:.2f} % <br>' +
-                                    '%{text}',
-                                    name=key, line={'color': color_map[key], 'dash': "solid",
-                                                    'width': interface_config.LINE_WIDTH}))
-        last_date = list(time_series.keys())[-1]
-
-    figure.update_layout(title="SOFR - RRP Spreads")
-    figure.update_yaxes(title_text="Percent")
-    __add_qt_regime(figure, last_date, add_regime=False)
-    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
-                                 'y': 1.02, 'xanchor': "right", 'x': 1})
-    figure = interface_utils.format_figure(figure, show_x_range=False)
-    return figure
-
 
 def __tga_figure():
     start_date = src_config.TS_START_DATE_L
@@ -485,7 +608,7 @@ def __tga_figure():
                                 showlegend=False))
     figure.update_layout(title="U.S. Treasury, General Account")
     figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, list(time_series.keys())[-1])
+    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
 
@@ -506,7 +629,7 @@ def __fedfund_figure():
                                 showlegend=False))
     figure.update_layout(title="Domestic Bank Share of Federal Funds Borrowed")
     figure.update_yaxes(title_text="Percent")
-    __add_qt_regime(figure, list(time_series.keys())[-1])
+    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
     figure = interface_utils.format_figure(figure)
     return figure
 
@@ -528,15 +651,29 @@ def iorb_effr_panel():
                  className="row"),
     ], shadow="xs", bg="black")
 
+def iorb_bgcr_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __rate_to_iorb_figure("bgcr")
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dcc.Markdown('''
+        * Recent references: 
+            - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
 def iorb_tgcr_panel():
     """
     :return: panel for effr-iorb spread
     """
-    figure = __tgcr_iorb_figure()
+    figure = __rate_to_iorb_figure("tgcr")
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
-            html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
             html.Div(dcc.Markdown('''
         * Weather the money market rates trade below IOER is a sign of liquidity condition.
         * The tri-party general collateral rate (TGCR) are repos secured by Treasury securities.
@@ -553,16 +690,47 @@ def iorb_sofr_panel():
     """
     :return: panel for effr-iorb spread
     """
-    figure = __sofr_iorb_figure()
+    figure = __rate_to_iorb_figure("sofr")
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
-            html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
             html.Div(dcc.Markdown('''
         * The secured overnight financing rate (SOFR) includes a broader set of Treasury repo transactions than TGCR.
         * Some SOFR transactions include compensation for intermediating funds from the triparty segment to cash borrowers who lack direct access to that segment.
         * Hence, the TGCR-IOER spread could be a cleaner read of on the liquidity conditions in the secured market.
         * This widening of SOFR and TGCR at month-end is resulted from the limited balance sheet availability at dealers that intermediate between the triparty and centrally cleared market segments.
+         * Recent references: 
+            - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+''',   link_target="_blank"),className="row")
+                          ], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
+def iorb_obfr_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __rate_to_iorb_figure("obfr")
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dcc.Markdown('''
+         * Recent references: 
+            - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+''',   link_target="_blank"),className="row")
+                          ], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
+def iorb_fedfund_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __rate_to_iorb_figure("effr")
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dcc.Markdown('''
          * Recent references: 
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
 ''',   link_target="_blank"),className="row")
@@ -696,27 +864,6 @@ def tga_panel():
               of depository institutions, all else being equal. 
             * Conversely, funds that flow into the TGA, such as from a tax payment, 
               drain balances from the deposits of depository institutions. 
-    ''', link_target="_blank", ), className="row")],
-                               className="four columns", style={"padding-top": "20px"})],
-                 className="row"),
-    ], shadow="xs", bg="black")
-
-
-def sofr_panel():
-    """
-        :return: panel for elasticity monitor
-    """
-    figure = __sofr_figure()
-    return dmc.Paper(children=[
-        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-                           html.Div(
-                               children=[
-                                   html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
-                                   html.Div(dcc.Markdown('''
-            * SOFR is a broad measure of the cost of borrowing cash overnight collateralized by Treasury securities. 
-            * SOFR includes all trades in BGCR + bilateral Treasury repo cleared through DVP offered by FICC, which is 
-            filtered to remove "specials".
-            * SOFR is calculated as a volume-weighted median of transaction-level tri-party repo data + GCF Repo transaction data + bilateral Treasury repo transactions cleared through FICC's DVP service.
     ''', link_target="_blank", ), className="row")],
                                className="four columns", style={"padding-top": "20px"})],
                  className="row"),

@@ -8,9 +8,10 @@ server = app.server
 
 def get_icon(name):
     icon_map = {"home": "bi:house-door-fill", "reserve condition": "tdesign:dam-2",
-                "money market": "fluent-mdl2:money",
+                "central bank balance sheet": "akar-icons:book",
                 "central bank feeds": "jam:rss-feed",
-                "united states": "twemoji:flag-united-states"}
+                "united states": "twemoji:flag-united-states",
+                "on funding market": "fluent-mdl2:money"}
     return DashIconify(icon=icon_map[name.lower()], height=16)
 
 def __create_page_structure():
@@ -49,7 +50,7 @@ def create_sidebar():
 
             component = html.Div(
                 dmc.NavLink(
-                label=root.replace("-", " ").title(),
+                label=root.replace("-", " ").title().replace("On", "O/N"),
                 icon=get_icon(root.replace("-", " ")),
                 children=page_children,
                 opened=True,
@@ -57,7 +58,7 @@ def create_sidebar():
             children.append(component)
         elif len(data) == 0:
             component = html.Div(dmc.NavLink(
-                label=page["name"].title(),
+                label=page["name"].title().replace("On", "O/N"),
                 href=path,
                 icon=get_icon(page["name"]),
                 ), className="row")

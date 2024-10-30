@@ -14,6 +14,7 @@ def rename_key(key):
     key = key.replace("Pctl", "%")
     key = key.replace("-A", "")
     key = key.replace("_", " ")
+
     return key
 
 def format_figure(figure, show_x_range=False):
@@ -75,7 +76,6 @@ def get_text_content(entry):
         for row in tag.next_siblings:
             text += row.get_text()
         return text
-
 
 
 def fed_cb_images():
