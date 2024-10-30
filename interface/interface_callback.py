@@ -2,7 +2,6 @@
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc, Output, callback, Input
-from streamlit import container
 
 import interface.config as interface_config
 import src.liquidity_monitor
@@ -94,11 +93,11 @@ def __get_policy_updates(values):
                                             mt="md",
                                             mb="xs",
                                         ),
-                                        dmc.Text(
-                                            entry.description,
-                                            size="sm",
-                                            c="dimmed",
-                                        ),
+                                        # dmc.Text(
+                                        #     entry.description,
+                                        #     size="sm",
+                                        #     c="dimmed",
+                                        # ),
                                         html.Div(
                                             children=[
                                                 html.Div(dmc.Anchor(

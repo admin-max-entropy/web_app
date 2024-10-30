@@ -61,7 +61,10 @@ def fed_central_bankers():
                  pages.config.AKUGLER: "https://www.federalreserve.gov/feeds/s_t_kugler.xml",
                  pages.config.LCOOK: "https://www.federalreserve.gov/feeds/s_t_cook.xml",
                  pages.config.LOGAN: "https://www.dallasfed.org/rss/speeches.xml",
-                 pages.config.JWILLAIM: ""
+                 pages.config.JWILLAIM: "",
+                 pages.config.RBOSTIC: "",
+                 pages.config.MDALY: "",
+                 pages.config.TBARKIN: ""
                  }
     return names_map
 
@@ -84,7 +87,10 @@ def fed_cb_images():
                  pages.config.AKUGLER: "https://www.federalreservehistory.org/-/media/images/Kugler_Adriana.jpg",
                  pages.config.LCOOK: "https://www.federalreservehistory.org/-/media/images/Cook_Lisa.jpg",
                  pages.config.LOGAN: "https://www.federalreservehistory.org/-/media/images/Logan_Lorie.jpg",
-                 pages.config.JWILLAIM: "https://www.federalreservehistory.org/-/media/images/williams_john_c.jpg"
+                 pages.config.JWILLAIM: "https://www.federalreservehistory.org/-/media/images/williams_john_c.jpg",
+                 pages.config.RBOSTIC: "https://www.federalreservehistory.org/-/media/images/bostic_raphael.jpg",
+                 pages.config.MDALY: "https://www.federalreservehistory.org/-/media/images/daly-mary-2022.jpg",
+                 pages.config.TBARKIN: "https://www.federalreservehistory.org/-/media/images/barkin-tom.jpg"
                  }
     return names_map
 
