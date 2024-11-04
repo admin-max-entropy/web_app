@@ -193,11 +193,11 @@ def iorb_tgcr_spread(start_date:datetime, end_date:datetime, cap: float, floor: 
     tgcr = get_short_end_timeseries("TGCR", start_date, end_date, apply_spread=False)
 
     spread = {}
-    for key in tgcr:
+    for key, ts in tgcr.items():
         spread[key] = {}
         for knot in iorb:
-            if knot in tgcr[key]:
-                spread[key][knot] = (tgcr[key][knot]-iorb[knot])*100.
+            if knot in ts:
+                spread[key][knot] = (ts[knot]-iorb[knot])*100.
                 spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
                 spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
     return spread
@@ -263,11 +263,11 @@ def iorb_bgcr_spread(start_date:datetime, end_date:datetime, cap: float, floor: 
     tgcr = get_short_end_timeseries("BGCR", start_date, end_date, apply_spread=False)
 
     spread = {}
-    for key in tgcr:
+    for key, ts in tgcr.items():
         spread[key] = {}
         for knot in iorb:
-            if knot in tgcr[key]:
-                spread[key][knot] = (tgcr[key][knot]-iorb[knot])*100.
+            if knot in ts:
+                spread[key][knot] = (ts[knot]-iorb[knot])*100.
                 spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
                 spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
     return spread
