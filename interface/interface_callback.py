@@ -713,7 +713,9 @@ def iorb_bgcr_panel():
             html.Div(dcc.Markdown('''
         * Recent references: 
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
-''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+''',   link_target="_blank"), className="row")],
+            className="four columns",
+            style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -732,7 +734,9 @@ def iorb_tgcr_panel():
         * The spread of IORB over TGCR indicates reserves remain in relatively excess supply compared with other liquid assets.
         * Recent references: 
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
-''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+''',   link_target="_blank"), className="row")],
+            className="four columns",
+            style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
