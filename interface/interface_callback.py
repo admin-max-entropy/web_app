@@ -363,21 +363,7 @@ def __rate_to_iorb_figure(key_input):
     start_date = src_config.TS_START_DATE_L
     cap = 80
     floor = -20
-    if key_input == "tgcr":
-        time_series_set = src.liquidity_monitor.iorb_tgcr_spread(start_date, end_date, cap, floor)
-    elif key_input == "sofr":
-        time_series_set = src.liquidity_monitor.iorb_sofr_spread(start_date, end_date, cap, floor)
-    elif key_input == "bgcr":
-        time_series_set = src.liquidity_monitor.iorb_bgcr_spread(start_date, end_date, cap, floor)
-    elif key_input == "effr":
-        time_series_set = src.liquidity_monitor.iorb_fedfund_spread(start_date,
-                                                                    end_date, cap, floor)
-    elif key_input == "obfr":
-        time_series_set = src.liquidity_monitor.iorb_obfr_spread(start_date, end_date, cap, floor)
-
-    else:
-        raise RuntimeError("unsupported key"
-                           )
+    time_series_set = src.liquidity_monitor.iorb_key_spread(start_date, end_date, key_input, cap, floor)
     figure = go.Figure()
 
     last_date = None

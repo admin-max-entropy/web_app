@@ -183,14 +183,14 @@ def repo_volume_ts(start_date:datetime, end_date:datetime, is_repo:bool):
     return repo_volumes
 
 @functools.lru_cache()
-def iorb_tgcr_spread(start_date:datetime, end_date:datetime, cap: float, floor: float):
+def iorb_key_spread(start_date:datetime, end_date:datetime, key_input, cap: float, floor: float):
     """
     :param start_date:
     :param end_date:
     :return: spread between effr and iorb
     """
     iorb = __iorb_timeseries(start_date, end_date)
-    tgcr = get_short_end_timeseries("TGCR", start_date, end_date, apply_spread=False)
+    tgcr = get_short_end_timeseries(key_input.upper(), start_date, end_date, apply_spread=False)
 
     spread = {}
     for key, ts in tgcr.items():
@@ -198,11 +198,12 @@ def iorb_tgcr_spread(start_date:datetime, end_date:datetime, cap: float, floor: 
         for knot in iorb:
             if knot in ts:
                 spread[key][knot] = (ts[knot]-iorb[knot])*100.
-                spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-                spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
+                spread[key][knot] = min(cap, spread[key][knot]) \
+                    if not math.isnan(spread[key][knot]) else math.nan
+                spread[key][knot] = max(floor, spread[key][knot]) \
+                    if not math.isnan(spread[key][knot]) else math.nan
     return spread
 
-@functools.lru_cache()
 def iorb_rrp_spread(start_date:datetime, end_date:datetime):
     """
     :param start_date:
@@ -213,9 +214,9 @@ def iorb_rrp_spread(start_date:datetime, end_date:datetime):
     rrp = __rrp_rate(start_date, end_date)
 
     spread = {}
-    for knot in rrp:
+    for knot, value in rrp.items():
         if knot in iorb:
-            spread[knot] = (rrp[knot]-iorb[knot])*100.
+            spread[knot] = (value-iorb[knot])*100.
     return spread
 
 @functools.lru_cache()
@@ -250,88 +251,6 @@ def iorb_upper_spread(start_date:datetime, end_date:datetime):
     for knot in rrp:
         if knot in iorb:
             spread[knot] = (rrp[knot]-iorb[knot])*100.
-    return spread
-
-@functools.lru_cache()
-def iorb_bgcr_spread(start_date:datetime, end_date:datetime, cap: float, floor: float):
-    """
-    :param start_date:
-    :param end_date:
-    :return: spread between effr and iorb
-    """
-    iorb = __iorb_timeseries(start_date, end_date)
-    tgcr = get_short_end_timeseries("BGCR", start_date, end_date, apply_spread=False)
-
-    spread = {}
-    for key, ts in tgcr.items():
-        spread[key] = {}
-        for knot in iorb:
-            if knot in ts:
-                spread[key][knot] = (ts[knot]-iorb[knot])*100.
-                spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-                spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-    return spread
-
-
-
-@functools.lru_cache()
-def iorb_sofr_spread(start_date:datetime, end_date:datetime, cap: float, floor: float):
-    """
-    :param start_date:
-    :param end_date:
-    :return: spread between effr and iorb
-    """
-    iorb = __iorb_timeseries(start_date, end_date)
-    tgcr = get_short_end_timeseries("SOFR", start_date, end_date, apply_spread=False)
-
-    spread = {}
-    for key in tgcr:
-        spread[key] = {}
-        for knot in iorb:
-            if knot in tgcr[key]:
-                spread[key][knot] = (tgcr[key][knot]-iorb[knot])*100.
-                spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-                spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-    return spread
-
-@functools.lru_cache()
-def iorb_obfr_spread(start_date:datetime, end_date:datetime, cap: float, floor: float):
-    """
-    :param start_date:
-    :param end_date:
-    :return: spread between effr and iorb
-    """
-    iorb = __iorb_timeseries(start_date, end_date)
-    tgcr = get_short_end_timeseries("OBFR", start_date, end_date, apply_spread=False)
-
-    spread = {}
-    for key in tgcr:
-        spread[key] = {}
-        for knot in iorb:
-            if knot in tgcr[key]:
-                spread[key][knot] = (tgcr[key][knot]-iorb[knot])*100.
-                spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-                spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-    return spread
-
-@functools.lru_cache()
-def iorb_fedfund_spread(start_date:datetime, end_date:datetime, cap: float, floor: float):
-    """
-    :param start_date:
-    :param end_date:
-    :return: spread between effr and iorb
-    """
-    iorb = __iorb_timeseries(start_date, end_date)
-    tgcr = get_short_end_timeseries("EFFR", start_date, end_date, apply_spread=False)
-
-    spread = {}
-    for key in tgcr:
-        spread[key] = {}
-        for knot in iorb:
-            if knot in tgcr[key]:
-                spread[key][knot] = (tgcr[key][knot]-iorb[knot])*100.
-                spread[key][knot] = min(cap, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
-                spread[key][knot] = max(floor, spread[key][knot]) if not math.isnan(spread[key][knot]) else math.nan
     return spread
 
 @functools.lru_cache()
