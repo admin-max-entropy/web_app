@@ -363,7 +363,8 @@ def __rate_to_iorb_figure(key_input):
     start_date = src_config.TS_START_DATE_L
     cap = 80
     floor = -20
-    time_series_set = src.liquidity_monitor.iorb_key_spread(start_date, end_date, key_input, cap, floor)
+    time_series_set = src.liquidity_monitor.iorb_key_spread(start_date,
+                                                            end_date, key_input, cap, floor)
     figure = go.Figure()
 
     last_date = None
