@@ -882,14 +882,18 @@ def rrp_panel():
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(
                                children=[
-                                   html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                                   html.Div(dmc.Badge("Liability",
+                                                      variant="filled", color="yellow"),
+                                            className="row"),
                                html.Div(dcc.Markdown('''
             * Currently, RRP is used as a tool to help keep the federal funds rate in the target range established by the FOMC.
             * We tend to see RRP balances increase over quarter-end, due to the banks refrain from intermediations on 
             repo trades with Money Market Funds at quarter ends.
             * Recent references: 
                 - [Kansas City Fed, Rapid Declines in the Fed’s Overnight Reverse Repurchase (ON RRP) Facility May Start to Slow, 11/10/2023]({link})
-    ''', link_target="_blank", ), className="row")], className="four columns", style={"padding-top": "20px"})],
+    ''', link_target="_blank", ), className="row")],
+                               className="four columns",
+                               style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -902,8 +906,10 @@ def foreign_rrp_panel():
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(
                                children=[
-                                   html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
-
+                                   html.Div(
+                                       dmc.Badge("Liability",
+                                                 variant="filled", color="yellow"),
+                                       className="row"),
                                    html.Div(dcc.Markdown('''
             * Federal Reserve conducts overnight reverse repos with foreign official and international institutions, including foreign central banks. 
     ''', link_target="_blank", ), className="row")],
