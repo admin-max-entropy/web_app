@@ -158,11 +158,11 @@ def __get_speeches(values):
                     variant="subtle",
                     leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
                     color="blue",
-                    size="sm", fullWidth=True,
+                    size="sm",
                 ), href=entry["url"], target="_blank"), className="two columns"),
                         html.Div(dmc.HoverCard(
                             withArrow=True,
-                            width=500,
+                            width="100%",
                             shadow="md",
                             children=[
                                 dmc.HoverCardTarget(dmc.Button("",
@@ -350,7 +350,8 @@ def __secured_repo_volume_figure(is_repo):
                                       'width': interface_config.LINE_WIDTH},
                                 name=key.upper(), showlegend=True))
     last_date = end_date
-    figure.update_layout(title="Repo Market Volumes" if is_repo else "Unsecured Volumes")
+    figure.update_layout(title="Volume of Transactions underlying Secured rates based on O/N Repo backed by Treasury securities"
+    if is_repo else "Volume of Transactions underlying Unsecured rates")
     figure.update_yaxes(title_text="Billion ($)")
     __add_qt_regime(figure, start_date, last_date, add_regime=True, cap=None, floor=None)
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
@@ -610,10 +611,18 @@ def volume_repo_panel():
     :return: panel for effr-iorb spread
     """
     figure = __secured_repo_volume_figure(is_repo=True)
+    link = "https://www.financialresearch.gov/short-term-funding-monitor/market-digests/volume/chart-30/"
+
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
-            html.Div(dcc.Markdown('''
+            html.Div(dcc.Markdown(f'''
+        * TGCR: covers specific-counterparty tri-party general collateral repo transactions
+        * BGCR: covers trades included in the TGCR & blind-brokered general collateral trades in the GCF Repo Service offered by the FICC
+        * SOFR: covers trades in the BGCR & bilateral repo transactions cleared through the DVP Service offered by FICC, 
+        filtered to remove a portion of transactions considered “specials.”
+        * Recent references: 
+            - [OFR Short-term Funding Monitor - Market Digests]({link})
 ''',   link_target="_blank"), className="row")],
             className="four columns", style={"padding-top": "20px"})],
                  className="row"),
@@ -624,10 +633,17 @@ def volume_unsecured_panel():
     :return: panel for effr-iorb spread
     """
     figure = __secured_repo_volume_figure(is_repo=False)
+    link_1 = "https://www.financialresearch.gov/short-term-funding-monitor/market-digests/volume/chart-30/"
+    link_2 = "https://libertystreeteconomics.newyorkfed.org/2017/08/regulatory-incentives-and-quarter-end-dynamics-in-the-repo-market/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
-            html.Div(dcc.Markdown('''
+            html.Div(dcc.Markdown(f'''
+        * EFFR: based on data on overnight federal funds transactions provided by domestic banks and U.S. branches and agencies of foreign banks
+        * OBFR: based on data on EFFR & Eurodollar transactions and certain domestic deposits
+        * Recent references: 
+            - [OFR Short-term Funding Monitor - Market Digests]({link_1})
+            - [Regulatory Incentives and Quarter‑End Dynamics in the Repo Market]({link_2})
 ''',   link_target="_blank"), className="row")],
             className="four columns", style={"padding-top": "20px"})],
                  className="row"),
@@ -679,8 +695,13 @@ def iorb_fedfund_panel():
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
+        * When reserves become less abundant, the cost to borrow federal funds tends to increase relative to IORB.
+        * Currently, EFFR has a persistent -7 bps spread to IOER. 
+        * However, should keep an eye on the EFFR at 99% to IOER spread as well. 
+        be negative and statistically different from zero.
          * Recent references: 
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+            - [Roberto Perli, Balance Sheet Normalization: Monitoring Reserve Conditions and Understanding Repo Market Pressures, 09/26/2024](https://www.newyorkfed.org/newsevents/speeches/2024/per240926)
 ''',   link_target="_blank"),className="row")
                           ], className="four columns", style={"padding-top": "20px"})],
                  className="row"),
