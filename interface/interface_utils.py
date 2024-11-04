@@ -1,8 +1,8 @@
 """interface utils"""
 from datetime import datetime, timedelta
 import pytz
-import pages.config
 import bs4
+import pages.config
 
 
 def rename_key(key):
@@ -30,38 +30,53 @@ def format_figure(figure, show_x_range=False):
     )
     figure.update_xaxes(showgrid=False)
     figure.update_yaxes(showgrid=False, zeroline=False)
-    figure.update_layout(font={'color': "#E0E0E0"}, margin={'l': 60, 'r': 20, "t": 50,'b': 40}, title_x=0)
+    figure.update_layout(font={'color': "#E0E0E0"},
+                         margin={'l': 60, 'r': 20, "t": 50,'b': 40}, title_x=0)
     figure.update_layout(height=297)
     if show_x_range:
-        figure.update_layout(xaxis=dict(rangeslider = dict(
-            visible=True
-        )))
+        figure.update_layout(xaxis={'rangeslider': {'visible': True}})
     return figure
 
 def end_date():
     """
     :return: return data in EST
     """
-    current_time = datetime.now(pytz.timezone("America/New_York")).replace(hour=0, minute=0, second=0, microsecond=0)
+    current_time = datetime.now(pytz.timezone("America/New_York"))
+    current_time = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
     if current_time <= current_time.replace(hour=6):
         return current_time + timedelta(days=-1)
     return current_time
 
 def fed_rss_tags(names_map):
+    """
+    :param names_map:
+    :return:
+    """
     data = []
     for key in names_map:
-        data.append(dict(value=key, label=key))
+        data.append({'value': key, 'label': key})
     return data
 
 def fed_central_bankers():
-    names_map = {pages.config.JPOW: "https://www.federalreserve.gov/feeds/s_t_powell.xml",
-                 pages.config.MBARR: "https://www.federalreserve.gov/feeds/s_t_barr.xml",
-                 pages.config.CWALLER: "https://www.federalreserve.gov/feeds/s_t_waller.xml",
-                 pages.config.PJEFF: "https://www.federalreserve.gov/feeds/s_t_jefferson.xml",
-                 pages.config.MBOW: "https://www.federalreserve.gov/feeds/m_w_Bowman.xml",
-                 pages.config.AKUGLER: "https://www.federalreserve.gov/feeds/s_t_kugler.xml",
-                 pages.config.LCOOK: "https://www.federalreserve.gov/feeds/s_t_cook.xml",
-                 pages.config.LOGAN: "https://www.dallasfed.org/rss/speeches.xml",
+    """
+    :return:
+    """
+    names_map = {pages.config.JPOW:
+                     "https://www.federalreserve.gov/feeds/s_t_powell.xml",
+                 pages.config.MBARR:
+                     "https://www.federalreserve.gov/feeds/s_t_barr.xml",
+                 pages.config.CWALLER:
+                     "https://www.federalreserve.gov/feeds/s_t_waller.xml",
+                 pages.config.PJEFF:
+                     "https://www.federalreserve.gov/feeds/s_t_jefferson.xml",
+                 pages.config.MBOW:
+                     "https://www.federalreserve.gov/feeds/m_w_Bowman.xml",
+                 pages.config.AKUGLER:
+                     "https://www.federalreserve.gov/feeds/s_t_kugler.xml",
+                 pages.config.LCOOK:
+                     "https://www.federalreserve.gov/feeds/s_t_cook.xml",
+                 pages.config.LOGAN:
+                     "https://www.dallasfed.org/rss/speeches.xml",
                  pages.config.JWILLAIM: "",
                  pages.config.RBOSTIC: "",
                  pages.config.MDALY: "",
@@ -70,6 +85,10 @@ def fed_central_bankers():
     return names_map
 
 def get_text_content(entry):
+    """
+    :param entry:
+    :return:
+    """
     soup = bs4.BeautifulSoup(entry.summary, features="html.parser")
     text = ""
     for tag in soup.find_all("br"):
@@ -79,30 +98,54 @@ def get_text_content(entry):
 
 
 def fed_cb_images():
-    names_map = {pages.config.JPOW: "https://www.federalreservehistory.org/-/media/images/powell_jerome.jpg",
-                 pages.config.MBARR: "https://www.federalreservehistory.org/-/media/images/Barr_Michael.jpg",
-                 pages.config.CWALLER: "https://www.federalreservehistory.org/-/media/images/waller_christopher.jpg",
-                 pages.config.PJEFF: "https://www.federalreservehistory.org/-/media/images/Jefferson_Phillip.jpg",
-                 pages.config.MBOW: "https://www.federalreservehistory.org/-/media/images/bowman_michelle.jpg",
-                 pages.config.AKUGLER: "https://www.federalreservehistory.org/-/media/images/Kugler_Adriana.jpg",
-                 pages.config.LCOOK: "https://www.federalreservehistory.org/-/media/images/Cook_Lisa.jpg",
-                 pages.config.LOGAN: "https://www.federalreservehistory.org/-/media/images/Logan_Lorie.jpg",
-                 pages.config.JWILLAIM: "https://www.federalreservehistory.org/-/media/images/williams_john_c.jpg",
-                 pages.config.RBOSTIC: "https://www.federalreservehistory.org/-/media/images/bostic_raphael.jpg",
-                 pages.config.MDALY: "https://www.federalreservehistory.org/-/media/images/daly-mary-2022.jpg",
-                 pages.config.TBARKIN: "https://www.federalreservehistory.org/-/media/images/barkin-tom.jpg"
+    """
+    :return:
+    """
+    names_map = {pages.config.JPOW:
+                     "https://www.federalreservehistory.org/-/media/images/powell_jerome.jpg",
+                 pages.config.MBARR:
+                     "https://www.federalreservehistory.org/-/media/images/Barr_Michael.jpg",
+                 pages.config.CWALLER:
+                     "https://www.federalreservehistory.org/-/media/images/waller_christopher.jpg",
+                 pages.config.PJEFF:
+                     "https://www.federalreservehistory.org/-/media/images/Jefferson_Phillip.jpg",
+                 pages.config.MBOW:
+                     "https://www.federalreservehistory.org/-/media/images/bowman_michelle.jpg",
+                 pages.config.AKUGLER:
+                     "https://www.federalreservehistory.org/-/media/images/Kugler_Adriana.jpg",
+                 pages.config.LCOOK:
+                     "https://www.federalreservehistory.org/-/media/images/Cook_Lisa.jpg",
+                 pages.config.LOGAN:
+                     "https://www.federalreservehistory.org/-/media/images/Logan_Lorie.jpg",
+                 pages.config.JWILLAIM:
+                     "https://www.federalreservehistory.org/-/media/images/williams_john_c.jpg",
+                 pages.config.RBOSTIC:
+                     "https://www.federalreservehistory.org/-/media/images/bostic_raphael.jpg",
+                 pages.config.MDALY:
+                     "https://www.federalreservehistory.org/-/media/images/daly-mary-2022.jpg",
+                 pages.config.TBARKIN:
+                     "https://www.federalreservehistory.org/-/media/images/barkin-tom.jpg"
                  }
     return names_map
 
 
 def fed_research_feeds():
-    names_map = {pages.config.FEDS_NOTES: "https://www.federalreserve.gov/feeds/feds_notes.xml",
-                 pages.config.FINANCE_AND_ECONOMICS_DISCUSSION: "https://www.federalreserve.gov/feeds/feds.xml",
-                 pages.config.FRB_WORKING_PAPER: "https://www.federalreserve.gov/feeds/working_papers.xml"
+    """
+    :return:
+    """
+    names_map = {pages.config.FEDS_NOTES:
+                     "https://www.federalreserve.gov/feeds/feds_notes.xml",
+                 pages.config.FINANCE_AND_ECONOMICS_DISCUSSION:
+                     "https://www.federalreserve.gov/feeds/feds.xml",
+                 pages.config.FRB_WORKING_PAPER:
+                     "https://www.federalreserve.gov/feeds/working_papers.xml"
                  }
     return names_map
 
 def fed_research_color():
+    """
+    :return:
+    """
     names_map = {pages.config.FEDS_NOTES: "cyan",
                  pages.config.FINANCE_AND_ECONOMICS_DISCUSSION: "pink",
                  pages.config.FRB_WORKING_PAPER: "blue"
@@ -110,12 +153,20 @@ def fed_research_color():
     return names_map
 
 def fed_cb_policy():
-    names_map = {pages.config.MONETARY_POLICY: "https://federalreserve.gov/feeds/press_monetary.xml",
-                 pages.config.BANKING_REGULATION: "https://www.federalreserve.gov/feeds/press_bcreg.xml"
+    """
+    :return:
+    """
+    names_map = {pages.config.MONETARY_POLICY:
+                     "https://federalreserve.gov/feeds/press_monetary.xml",
+                 pages.config.BANKING_REGULATION:
+                     "https://www.federalreserve.gov/feeds/press_bcreg.xml"
                  }
     return names_map
 
 def fed_cb_policy_color():
+    """
+    :return:
+    """
     names_map = {pages.config.MONETARY_POLICY: "teal",
                  pages.config.BANKING_REGULATION: "pink"
                  }
@@ -123,7 +174,10 @@ def fed_cb_policy_color():
 
 
 def convert_fed_rss_time(input_time):
-
+    """
+    :param input_time:
+    :return:
+    """
     if "GMT" in input_time:
         tz_name = 'GMT'
         tz = pytz.timezone(tz_name)
