@@ -3,16 +3,15 @@
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc, Output, callback, Input
-import interface.config
-import interface.config as interface_config
-import src.liquidity_monitor
-from interface import interface_utils
-from interface.interface_utils import fed_cb_policy, fed_research_feeds, fed_research_color
-from src import config as src_config
-import pages.config
 import feedparser
 from dash_iconify import DashIconify
+import interface.config as interface_config
+import src.liquidity_monitor
 import src.data_utils
+from src import config as src_config
+from interface import interface_utils
+from interface.interface_utils import fed_cb_policy, fed_research_feeds, fed_research_color
+import pages.config
 
 def __get_researches(values):
 
@@ -122,12 +121,12 @@ def __get_speeches(values):
     links = {}
     ai_collection = src.data_utils.fed_speech_collection()
 
-    for name, url in names_map.items():
+    for name, _ in names_map.items():
 
         if name not in values:
             continue
 
-        content = ai_collection.find(dict(author=name))
+        content = ai_collection.find({'author': name})
 
         for entry in content:
 
@@ -190,14 +189,22 @@ def __get_speeches(values):
     Output(component_id=pages.config.APP_ID_SPEECH_CARDS, component_property='children'),
     Input(component_id=pages.config.APP_ID_SPEECHES, component_property='value')
 )
-def update_output_div(input_value):
+def update_output_speech(input_value):
+    """
+    :param input_value:
+    :return:
+    """
     return __get_speeches(input_value)
 
 @callback(
     Output(component_id=pages.config.APP_ID_POLICY_CARDS, component_property='children'),
     Input(component_id=pages.config.APP_ID_POLICY, component_property='value')
 )
-def update_output_div(input_value):
+def update_output_policy(input_value):
+    """
+    :param input_value:
+    :return:
+    """
     return __get_policy_updates(input_value)
 
 @callback(
@@ -205,6 +212,10 @@ def update_output_div(input_value):
     Input(component_id=pages.config.APP_ID_RESEARCH, component_property='value')
 )
 def update_output_div(input_value):
+    """
+    :param input_value:
+    :return:
+    """
     return __get_researches(input_value)
 
 def __overdraft_figure(is_average):
@@ -342,7 +353,7 @@ def __bgcr_iorb_figure():
     return figure
 
 def __repo_volum_color_map():
-    color_map = {"sofr": interface.config.LINE_COLOR,
+    color_map = {"sofr": interface_config.LINE_COLOR,
                  "tgcr": "#FF6347",
                  "bgcr": "#3CB371",
                  "effr": "#ad0034",
@@ -735,7 +746,8 @@ def volume_repo_panel():
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
-''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+''',   link_target="_blank"), className="row")],
+            className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -748,7 +760,8 @@ def volume_unsecured_panel():
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
-''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+''',   link_target="_blank"), className="row")],
+            className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")
 
@@ -832,7 +845,7 @@ def overdraft_panel(is_average):
     figure = __overdraft_figure(is_average)
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
-        html.Div(dcc.Markdown(f'''
+        html.Div(dcc.Markdown('''
         * Daylight overdrafts occur when short-term shifts in payment activity result in a temporarily negative balance in a bank’s reserve account.
         * Higher average overdrafts are an indication that reserves are harder to come by in amounts needed to facilitate payments without intraday credit from the Federal Reserve.
         * Average overdrafts are much more informative for our purposes because they abstract from idiosyncratic factors that may affect individual institutions.
@@ -906,7 +919,9 @@ def reserve_panel():
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(children=[
-                               html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                               html.Div(
+                                   dmc.Badge("Liability",
+                                             variant="filled", color="yellow"), className="row"),
                                html.Div(dcc.Markdown('''
             * More than 5,000 depository institutions maintain accounts at the Federal Reserve Banks.
             * When the Federal Reserve buys securities, either outright or via a repurchase agreement (repo), the level of deposits increases.
@@ -924,7 +939,9 @@ def tga_panel():
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(children=[
-                               html.Div(dmc.Badge("Liability", variant="filled", color="yellow"), className="row"),
+                               html.Div(dmc.Badge(
+                                   "Liability",
+                                   variant="filled", color="yellow"), className="row"),
                                html.Div(dcc.Markdown('''
             * Major outlays of the Treasury are paid from the Treasury's general account at the Federal Reserve.
             * A decline in the balances held in the TGA results in an increase in the deposits 
