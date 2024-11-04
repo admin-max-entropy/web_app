@@ -1,8 +1,9 @@
 """callback functions"""
+
 import dash_mantine_components as dmc
 import plotly.graph_objects as go
 from dash import html, dcc, Output, callback, Input
-
+import interface.config
 import interface.config as interface_config
 import src.liquidity_monitor
 from interface import interface_utils
@@ -269,7 +270,7 @@ def __elasticity_figure():
     return figure
 
 
-def __add_qt_regime(figure, start_date, end_date, add_regime=True):
+def __add_qt_regime(figure, start_date, end_date, add_regime=True, cap=None, floor=None):
     if add_regime:
         figure.add_vrect(x0=max(start_date, src_config.PREV_QT_START), x1=src_config.PREV_QT_END,
                          annotation_text=f"QT: {src_config.PREV_QT_START.strftime('%Y.%m.%d')}"
@@ -285,6 +286,9 @@ def __add_qt_regime(figure, start_date, end_date, add_regime=True):
                          annotation_position="top left",
                          fillcolor="#536878", opacity=0.25, line_width=0)
     note = f'Last Update: {end_date.strftime("%Y.%m.%d")}'
+    if cap is not None and floor is not None:
+        note += f". Spread is capped at {cap} bps and floored at {floor} bps."
+
     figure.add_annotation(
         showarrow=False,
         text=note,
@@ -332,6 +336,42 @@ def __bgcr_iorb_figure():
     figure.update_layout(title="BGCR-IORB Spread")
     figure.update_yaxes(title_text="Bps")
     __add_qt_regime(figure, start_date, last_date, add_regime=True)
+    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
+                                 'y': 1.02, 'xanchor': "right", 'x': 1})
+    figure = interface_utils.format_figure(figure)
+    return figure
+
+def __repo_volum_color_map():
+    color_map = {"sofr": interface.config.LINE_COLOR,
+                 "tgcr": "#FF6347",
+                 "bgcr": "#3CB371",
+                 "effr": "#ad0034",
+                 "obfr": "#FFFF99"}
+
+    return color_map
+
+def __secured_repo_volume_figure(is_repo):
+
+    start_date = src_config.TS_START_DATE_L
+    end_date = interface_utils.end_date().replace(tzinfo=None)
+    time_series_set =  src.liquidity_monitor.repo_volume_ts(start_date, end_date, is_repo=is_repo)
+
+    figure = go.Figure()
+
+    for key, time_series in time_series_set.items():
+        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
+                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
+                                              list(time_series.keys()))),
+                                hovertemplate=
+                                '%{y:.2f} BN($) <br>' +
+                                '%{text}',
+                                line={'color': __repo_volum_color_map()[key],
+                                      'width': interface_config.LINE_WIDTH},
+                                name=key.upper(), showlegend=True))
+    last_date = end_date
+    figure.update_layout(title="Repo Market Volumes" if is_repo else "Unsecured Volumes")
+    figure.update_yaxes(title_text="Billion ($)")
+    __add_qt_regime(figure, start_date, last_date, add_regime=True, cap=None, floor=None)
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
     figure = interface_utils.format_figure(figure)
@@ -395,7 +435,7 @@ def __rate_to_iorb_figure(key_input):
                                 line={'color': "grey", 'width': 0.3}, showlegend=False, name=""))
     figure.update_layout(title=f"{key_input.upper()}-IORB Spread")
     figure.update_yaxes(title_text="Bps")
-    __add_qt_regime(figure, start_date, last_date, add_regime=True)
+    __add_qt_regime(figure, start_date, last_date, add_regime=True, cap=cap, floor=floor)
     figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
                                  'y': 1.02, 'xanchor': "right", 'x': 1})
     figure = interface_utils.format_figure(figure)
@@ -681,6 +721,33 @@ def iorb_tgcr_panel():
         * The spread of IORB over TGCR indicates reserves remain in relatively excess supply compared with other liquid assets.
         * Recent references: 
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
+''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
+
+def volume_repo_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __secured_repo_volume_figure(is_repo=True)
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dcc.Markdown('''
+''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
+                 className="row"),
+    ], shadow="xs", bg="black")
+
+def volume_unsecured_panel():
+    """
+    :return: panel for effr-iorb spread
+    """
+    figure = __secured_repo_volume_figure(is_repo=False)
+    return dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(children=[
+            html.Div(dcc.Markdown('''
 ''',   link_target="_blank"), className="row")], className="four columns", style={"padding-top": "20px"})],
                  className="row"),
     ], shadow="xs", bg="black")

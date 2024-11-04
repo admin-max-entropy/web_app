@@ -160,6 +160,29 @@ def iorb_effr_spread(start_date:datetime, end_date:datetime):
     return spread
 
 @functools.lru_cache()
+def repo_volume_ts(start_date:datetime, end_date:datetime, is_repo:bool):
+    """
+    :param start_date:
+    :param end_date:
+    :return: spread between effr and iorb
+    """
+    repo_volumes = {}
+    data_in_bulk = __data_in_bulk()
+    keys = ["tgcr", "sofr", "bgcr"] if is_repo else ["effr", "obfr"]
+
+    for key in keys:
+        repo_volumes[key] = {}
+        filtered_data = data_in_bulk[f"FNYR-{key.upper()}_UV-A"]["timeseries"]["aggregation"]
+
+        for row in filtered_data:
+            date = datetime.datetime.strptime(row[0], "%Y-%m-%d")
+            if date > end_date or date < start_date:
+                continue
+            repo_volumes[key][date] = row[1]/1e9
+
+    return repo_volumes
+
+@functools.lru_cache()
 def iorb_tgcr_spread(start_date:datetime, end_date:datetime, cap: float, floor: float):
     """
     :param start_date:
@@ -389,7 +412,7 @@ def daylight_overdraft(is_average):
 
     return result
 
-@functools.lru_cache()
+@functools.lru_cache(maxsize=1024)
 def __data_in_bulk():
     url = "https://data.financialresearch.gov/v1/series/dataset?dataset=fnyr"
     data = requests.get(url, timeout=60)

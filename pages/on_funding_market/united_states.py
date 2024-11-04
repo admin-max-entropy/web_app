@@ -12,4 +12,7 @@ layout = html.Div([
     html.Div(children=[interface.interface_callback.iorb_bgcr_panel()], className="row"),
     html.Div(children=[interface.interface_callback.iorb_fedfund_panel()], className="row"),
     html.Div(children=[interface.interface_callback.iorb_obfr_panel()], className="row"),
+
+    html.Div(children=[interface.interface_callback.volume_repo_panel()], className="row"),
+    html.Div(children=[interface.interface_callback.volume_unsecured_panel()], className="row"),
 ], className="row")
