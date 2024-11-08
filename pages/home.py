@@ -2,7 +2,12 @@
 import dash
 from dash import html
 import interface.interface_callback
-dash.register_page(__name__, path="/")
+dash.register_page(__name__, path="/home",
+    title = "Max Entropy",
+    image = "logo.png",
+    description='Financial Indicators & AI Insights on Central Bank Speeches',
+    order=1
+)
 
 layout = html.Div([
     html.Div(html.H5("Reserve Conditions Indicators"), className="row"),

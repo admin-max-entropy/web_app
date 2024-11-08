@@ -253,7 +253,7 @@ def iorb_upper_spread(start_date:datetime, end_date:datetime):
             spread[knot] = (rrp[knot]-iorb[knot])*100.
     return spread
 
-@functools.lru_cache()
+@functools.lru_cache(maxsize=1024)
 def fedfund_volume_decomposition(start_date:datetime, end_date:datetime):
     """
     :param start_date:

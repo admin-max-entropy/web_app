@@ -767,6 +767,8 @@ def rrp_panel():
        :return: panel for elasticity monitor
        """
     figure = __rrp_figure()
+    link = ("https://www.kansascityfed.org/research/economic-bulletin/rapid-declines-in-the-feds-"
+            "overnight-reverse-repurchase-on-rrp-facility-may-start-to-slow")
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(
@@ -774,7 +776,7 @@ def rrp_panel():
                                    html.Div(dmc.Badge("Liability",
                                                       variant="filled", color="yellow"),
                                             className="row"),
-                               html.Div(dcc.Markdown('''
+                               html.Div(dcc.Markdown(f'''
             * Currently, RRP is used as a tool to help keep the federal funds rate in the target range established by the FOMC.
             * We tend to see RRP balances increase over quarter-end, due to the banks refrain from intermediations on 
             repo trades with Money Market Funds at quarter ends.

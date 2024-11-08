@@ -6,7 +6,7 @@ import dash_mantine_components as dmc
 import pages.config
 from interface import interface_utils
 
-dash.register_page(__name__)
+dash.register_page(__name__, order=5)
 
 layout =  dmc.MantineProvider(
     theme={

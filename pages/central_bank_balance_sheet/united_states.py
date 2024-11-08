@@ -3,7 +3,7 @@ import dash
 from dash import html
 
 import interface.interface_callback
-dash.register_page(__name__)
+dash.register_page(__name__, order=4)
 
 layout = html.Div([
     html.Div(html.H5("Federal Reserve Balance Sheet"), className="row"),

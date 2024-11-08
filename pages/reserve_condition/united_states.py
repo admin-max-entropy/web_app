@@ -2,7 +2,7 @@
 import dash
 from dash import html
 import interface.interface_callback
-dash.register_page(__name__)
+dash.register_page(__name__, order=3)
 
 layout = html.Div([
     html.Div(html.H5("Reserve Conditions Indicators"), className="row"),
