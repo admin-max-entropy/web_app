@@ -10,11 +10,11 @@ def rename_key(key):
     :param key:
     :return: renamed key for data from OFR
     """
-    key = key.replace("FNYR-", "")
+    key = key.replace("FNYR", "")
     key = key.replace("Pctl", "%")
-    key = key.replace("-A", "")
     key = key.replace("_", " ")
-
+    if key.endswith("A"):
+        key = key[:-1]
     return key
 
 def format_figure(figure, show_x_range=False):
@@ -41,7 +41,7 @@ def end_date():
     """
     :return: return data in EST
     """
-    current_time = datetime.now(pytz.timezone("America/New_York"))
+    current_time = datetime.now()
     current_time = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
     if current_time <= current_time.replace(hour=6):
         return current_time + timedelta(days=-1)

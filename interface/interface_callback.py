@@ -225,7 +225,7 @@ def update_output_div(input_value):
 
 def __overdraft_figure(is_average):
     color_map = {"Total": "#ad0034", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
-                 "Book-Entry": "#7FFFD4"}
+                 "Book Entry": "#7FFFD4"}
     data_set = src.liquidity_monitor.daylight_overdraft(is_average)
     figure = go.Figure()
     end_date = None
@@ -258,8 +258,8 @@ def __overdraft_figure(is_average):
 def __elasticity_figure():
     start_date = src_config.TS_START_DATE
     data_set = src.liquidity_monitor.get_elasticity_data(start_date)
-    color_map = {"50th % (main)": "#ad0034", "2.5th %": "#4BAAC8", "97.5th %": "#4BAAC8",
-                 "16th %": "#C0C0C0", "84th %": "#C0C0C0"}
+    color_map = {"50th": "#ad0034", "2.5th": "#4BAAC8", "97.5th": "#4BAAC8",
+                 "16th": "#C0C0C0", "84th": "#C0C0C0"}
     figure = go.Figure()
     end_date = None
     ts_tmp = None
@@ -464,7 +464,7 @@ def __reserve_figure():
 def __foreign_rrp_figure():
     start_date = src_config.TS_START_DATE_L
     end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, "WLRRAFOIAL")
+    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, src_config.TABLE_FOREIGN_RRP)
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()),
                                 y=list(map(lambda x: x/1e3, list(time_series.values()))),
@@ -487,7 +487,7 @@ def __foreign_rrp_figure():
 def __rrp_figure():
     start_date = src_config.TS_START_DATE_L
     end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, "RRPONTSYD")
+    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, src_config.TABLE_RRP_VOLUME)
     figure = go.Figure()
     figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
                                 text=list(map(lambda x: x.strftime("%Y-%m-%d"),
