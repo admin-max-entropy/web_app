@@ -9,14 +9,15 @@ import pages.config
 @callback(
     Output(component_id=pages.config.APP_ID_SPEECH_CARDS, component_property='children'),
     Input(component_id=pages.config.APP_ID_SPEECHES, component_property='value'),
+    Input(component_id=pages.config.APP_ID_SPEECH_TAGS, component_property='value'),
     prevent_initial_call=False
 )
-def update_output_speech(input_value):
+def update_output_speech(input_value, tags):
     """
     :param input_value:
     :return:
     """
-    return interface_utils.get_speeches(input_value)
+    return interface_utils.get_speeches(input_value, tags)
 
 @callback(
     Output(component_id=pages.config.APP_ID_POLICY_CARDS, component_property='children'),

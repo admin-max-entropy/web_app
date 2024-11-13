@@ -11,18 +11,7 @@ dash.register_page(__name__, order=5)
 layout =  dmc.MantineProvider(
     theme={
         "colorScheme": "dark",
-        "colors": {
-            "light0":["#003747"]*10,
-            "light1":["#065465"]*10,
-            "light2": ["#06768d"] * 10,
-            "light3": ["#4B9CAC"] * 10,
-            "light4": ["#008080"] * 10,
-            "light5": ["#cf9bc7"] * 10,
-            "light6": ["#aa519c"] * 10,
-            "light7": ["#bb73af"] * 10,
-            "light8": ["#6D8D96"] * 10,
-            "light9": ["#c249af"] * 10,
-        },
+        "colors": interface_utils.theme_colors(),
     },
     children=[
     html.Div(
@@ -42,6 +31,17 @@ layout =  dmc.MantineProvider(
             searchable=True,
             persistence=True,
             persistence_type="local"
+        ),
+    ], className="row", style={"paddingBottom": "10px"}),
+
+html.Div(
+    [
+        dmc.Group(
+            dmc.ChipGroup(
+                interface_utils.tags_chips(),
+                multiple=True,
+                id=pages.config.APP_ID_SPEECH_TAGS,
+            ),
         ),
     ], className="row", style={"paddingBottom": "10px"}),
 

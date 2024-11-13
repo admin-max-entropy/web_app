@@ -35,9 +35,9 @@ def __get_speech_summary():
         result[url] = document
     return result
 
-def get_speeches(values):
+def get_speeches(values, tags_input):
 
-    cutoff = 5
+    cutoff = 15
     names_map = fed_central_bankers()
     images = fed_cb_images()
     links = {}
@@ -60,11 +60,21 @@ def get_speeches(values):
             summary_list = []
             tags = []
             for key in ai_summary_:
-                if len(ai_summary_[key]) > 0:
-                    summary_list += [dmc.ListItem(dmc.Text([f"{reformat_key(key)}: ",
-                                                            f"{ai_summary_[key]}"],
-                                                           size="sm",
-                                                           c="dimmed"))]
+                text_list =  dmc.ListItem([dmc.Text([f"{reformat_key(key)}: "],
+                                                      size="sm",
+                                                      c="white"),
+                                           dmc.Text([f"{ai_summary_[key]}"],
+                                                                   size="sm",
+                                                                   c="dimmed")])
+
+                if len(ai_summary_[key]) > 1:
+                    if tags_input is None or len(tags_input) == 0:# sometimes it returns "."
+                        summary_list +=[text_list]
+                    else:
+                        low_tags = list(map(lambda x: x.lower(), tags_input))
+                        format_key_ = reformat_key(key)
+                        if format_key_.lower() in low_tags:
+                            summary_list += [text_list]
                     tags += [key]
             chips = list(map(lambda x: dmc.Badge(x.replace("_", " "),
                                                  size="xs", color=color_map_labels()[x],
@@ -82,10 +92,12 @@ def get_speeches(values):
                     mt="md",
                     mb="xs",
                 ),
-                dmc.Text(
+                html.Div(dmc.Text(
                     entry["description"], #interface_utils.get_text_content(entry),
                     size="sm",
                     c="dimmed",
+                ),style=({"display": "none"} if (tags_input is not None and len(tags_input)>0)
+                else {})
                 ),
                 html.Div(
                     children=[
@@ -119,18 +131,27 @@ def get_speeches(values):
                                 ),
                             ],
                         ), className="two columns"),
-                    ], className="row"),
-                html.Div(dmc.ChipGroup(chips),
-                         className="row"),
+                    ], className="row", style=({"display": "none"} if (tags_input is not None and len(tags_input)>0)
+                else {})),
+                html.Div(dmc.ChipGroup(chips), className="row", style=({"display": "none"} if (tags_input is not None and len(tags_input)>0)
+                else {})),
                     html.Div(dmc.List(summary_list), className="eleven half columns", style={"paddingTop":"10px"})
                 ],
                 className="row"),
             ], className="row"
         )
-            links[entry["date"]] = card
+            if tags_input is not  None and len(tags_input) != 0 and len(summary_list) == 0:
+                continue
+            if entry["date"] not in links:
+                links[entry["date"]] = []
+            links[entry["date"]] += [card]
 
     links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
-    return dmc.Timeline(children=list(links.values()))
+    final_items = []
+    for date in links:
+        final_items += links[date]
+    return dmc.Timeline(children=final_items)
+
 
 def get_policy_updates(values):
 
@@ -590,6 +611,20 @@ def __add_qt_regime(figure, start_date, end_date, add_regime=True, cap=None, flo
     )
     return figure
 
+def theme_colors():
+    return {
+        "light0": ["#003747"] * 10,
+        "light1": ["#065465"] * 10,
+        "light2": ["#06768d"] * 10,
+        "light3": ["#4B9CAC"] * 10,
+        "light4": ["#008080"] * 10,
+        "light5": ["#cf9bc7"] * 10,
+        "light6": ["#aa519c"] * 10,
+        "light7": ["#bb73af"] * 10,
+        "light8": ["#6D8D96"] * 10,
+        "light9": ["#c249af"] * 10,
+    }
+
 
 def reformat_key(key):
     key = key.replace("_", " ")
@@ -638,6 +673,36 @@ def color_map_labels():
            "banking_regulation": "light7",
            "policy_rate": "light9"}
     return tmp
+
+def tags_chips():
+    custom_css = """
+    .mantine-Chip-input:checked + .mantine-Chip-label::after {
+        content: '•'; /* Unicode dot character */
+        font-size: 20px;
+        color: black;
+        display: inline-block;
+        margin-left: 8px;
+        position: relative;
+        top: -1px;
+    }
+    """
+    result = []
+    for key, color in color_map_labels().items():
+        key_ = key.replace("_", " ")
+        key_ = key_.title()
+        styles = {
+            "label": {
+                "&[data-checked]": {
+                    "&, &:hover": {
+                        "backgroundColor": theme_colors()[color][5],
+                        "color": "white",
+                        'borderColor': theme_colors()[color][4],
+                    },
+                },
+            },
+        }
+        result += [dmc.Chip(key_, value=key_, styles=styles, size="xs", style={"checkIcon": None})]
+    return result
 
 def rename_key(key):
     """

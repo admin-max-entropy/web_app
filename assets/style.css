@@ -423,3 +423,26 @@ body {
 }
 
 .modebar { display: none !important; }
+
+.mantine-Chip-label {
+    display: flex !important;          /* Use flexbox for consistent alignment */
+    align-items: center !important;    /* Center text vertically */
+    justify-content: center;           /* Center text horizontally (optional) */
+    height: 20px !important;           /* Set custom height */
+    line-height: 16px !important;      /* Ensure text height matches chip height */
+    padding: 0 16px !important;        /* Adjust horizontal padding */
+    box-sizing: border-box !important;  /* Ensure padding is included in width */
+}
+
+.mantine-Chip-input:checked + .mantine-Chip-label {
+    border: 0px solid white !important;
+    height: 20px !important;        /* Set the height of the chip */
+    align-items: center !important;    /* Center content vertically */
+    justify-content: center;
+    line-height: 16px !important;
+    padding: 0 16px !important;
+}
+
+.mantine-Chip-input:checked + .mantine-Chip-label .mantine-Chip-checkIcon {
+    color: white !important;
+}

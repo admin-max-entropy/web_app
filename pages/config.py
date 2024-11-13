@@ -7,6 +7,7 @@ APP_ID_POLICY = "app_id_policy"
 APP_ID_SPEECH_CARDS = "app_id_speech_cards"
 APP_ID_POLICY_CARDS = "app_id_policy_cards"
 APP_ID_RESEARCH_CARDS = "app_id_research_cards"
+APP_ID_SPEECH_TAGS = "app_id_speech_tags"
 
 APP_ID_TGCR_IORB = "app_id_tgcr_iorb"
 APP_ID_SOFR_IORB = "app_id_sofr_iorb"
