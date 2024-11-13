@@ -1,7 +1,7 @@
 """config to store constant variables for liquidity monitor script"""
 import datetime
 
-FRED_API_KEY = '76c5b2251ca123fe274a24da976ca8ac'
+FRED_API_KEY = ""
 
 PREV_QT_START = datetime.datetime(2017, 10, 1)
 PREV_QT_END = datetime.datetime(2019, 7, 31)
@@ -11,9 +11,9 @@ QT_END = None
 TS_START_DATE = datetime.datetime(2017, 1, 1)
 TS_START_DATE_L = datetime.datetime(2018, 4, 2)
 
-HOST = "34.148.149.200"
-USER = "root"
-PWD = "Ljs084719@@" #@@"
+HOST = ""
+USER = ""
+PWD = "" #@@"
 
 DATABASE_STIR = "STIR_DB"
 TABLE_FF_DECOMP_VOLUME = "TABLE_FF_DECOMP_VOLUME"
