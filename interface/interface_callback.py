@@ -1,558 +1,58 @@
 """callback functions"""
-
+import dash
 import dash_mantine_components as dmc
-import plotly.graph_objects as go
 from dash import html, dcc, Output, callback, Input
-import feedparser
-from dash_iconify import DashIconify
-import interface.config as interface_config
-import src.liquidity_monitor
-import src.data_utils
-from src import config as src_config
 from interface import interface_utils
-from interface.interface_utils import fed_cb_policy, fed_research_feeds, fed_research_color
 import pages.config
 
-def __get_researches(values):
-
-    names_map = fed_research_feeds()
-    color_map = fed_research_color()
-
-    links = {}
-
-    for name, url in names_map.items():
-
-        if name not in values:
-            continue
-
-        feed = feedparser.parse(url)
-
-        for entry in feed.entries:
-
-            date_eastern = interface_utils.convert_fed_rss_time(entry.published)
-            card = dmc.TimelineItem(title= date_eastern.strftime("%a, %d %b %Y %H:%M"),
-            children=[
-                dmc.Group(
-                    [
-                        dmc.Badge(name, color=color_map[name], radius="xl", size="sm"),
-                        dmc.Text(entry.title, fw=500),
-                    ],
-                    mt="md",
-                    mb="xs",
-                ),
-                dmc.Text(
-                    interface_utils.get_text_content(entry),
-                    size="sm",
-                    c="dimmed",
-                ),
-                html.Div(
-                    children=[
-                html.Div(dmc.Anchor(
-                    dmc.Button(
-                    "",
-                    variant="subtle",
-                    leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
-                    color="blue",
-                    size="sm", fullWidth=True,
-                ), href=entry.link, target="_blank"), className="two columns")], className="row"),
-            ],
-        )
-            links[date_eastern] = card
-
-        links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
-    return dmc.Timeline(children=list(links.values()))
-
-
-def __get_policy_updates(values):
-
-    names_map = fed_cb_policy()
-    color_map = interface_utils.fed_cb_policy_color()
-    links = {}
-
-    for name, url in names_map.items():
-
-        if name not in values:
-            continue
-
-        feed = feedparser.parse(url)
-
-        for entry in feed.entries:
-
-            date_eastern = interface_utils.convert_fed_rss_time(entry.published)
-            card = dmc.TimelineItem(title=date_eastern.strftime("%a, %d %b %Y %H:%M"),
-                                    children=[
-                                        dmc.Group(
-                                            [
-                                                dmc.Badge(name, color=color_map[name],
-                                                          radius="xl", size="sm",
-                                                         variant="filled"),
-                                                dmc.Text(entry.title, fw=500),
-                                            ],
-                                            mt="md",
-                                            mb="xs",
-                                        ),
-                                        # dmc.Text(
-                                        #     entry.description,
-                                        #     size="sm",
-                                        #     c="dimmed",
-                                        # ),
-                                        html.Div(
-                                            children=[
-                                                html.Div(dmc.Anchor(
-                                                    dmc.Button(
-                                                        "",
-                                                        variant="subtle",
-                                                        leftIcon=
-                                                        DashIconify(icon="flat-color-icons:link",
-                                                                    width=20),
-                                                        color="blue",
-                                                        size="sm", fullWidth=True,
-                                                    ), href=entry.link, target="_blank"),
-                                                    className="two columns")],
-                                            className="row"),
-                                    ],
-                                    )
-            links[date_eastern] = card
-
-    links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
-    return dmc.Timeline(children=list(links.values()))
-
-def __get_speeches(values):
-
-    names_map = interface_utils.fed_central_bankers()
-    images = interface_utils.fed_cb_images()
-    links = {}
-    ai_collection = src.data_utils.fed_speech_collection()
-
-    for name, _ in names_map.items():
-
-        if name not in values:
-            continue
-
-        content = ai_collection.find({'author': name})
-
-        for entry in content:
-
-            card = dmc.TimelineItem(title= entry["date"].strftime("%a, %d %b %Y %H:%M"),
-
-            children=[
-                dmc.Group(
-                    [
-                        dmc.Avatar(src=images[name],
-                                   color="cyan", radius="xl", size="sm"),
-                        dmc.Text(entry["title"], fw=500),
-                    ],
-                    mt="md",
-                    mb="xs",
-                ),
-                dmc.Text(
-                    entry["description"], #interface_utils.get_text_content(entry),
-                    size="sm",
-                    c="dimmed",
-                ),
-                html.Div(
-                    children=[
-                html.Div(dmc.Anchor(
-                    dmc.Button(
-                    "",
-                    variant="subtle",
-                    leftIcon=DashIconify(icon="flat-color-icons:link", width=20),
-                    color="blue",
-                    size="sm",
-                ), href=entry["url"], target="_blank"), className="two columns"),
-                        html.Div(dmc.HoverCard(
-                            withArrow=True,
-                            width="100%",
-                            shadow="md",
-                            children=[
-                                dmc.HoverCardTarget(dmc.Button("",
-                                                               leftIcon=
-                                                               DashIconify(icon="ri:openai-fill",
-                                                                           width=20,
-                                                                           color="teal"),
-                                                               color="teal",
-                                                               size="sm",
-                                                               variant="subtle",
-                                                               )),
-                                dmc.HoverCardDropdown(
-                                    dmc.Text(
-                                        entry["summary"],
-                                        size="sm",
-                                    )
-                                ),
-                            ],
-                        ), className="two columns"),
-                    ], className="row"),
-            ],
-        )
-            links[entry["date"]] = card
-
-    links = dict(sorted(links.items(), key=lambda x: x[0], reverse=True))
-    return dmc.Timeline(children=list(links.values()))
 
 @callback(
     Output(component_id=pages.config.APP_ID_SPEECH_CARDS, component_property='children'),
-    Input(component_id=pages.config.APP_ID_SPEECHES, component_property='value')
+    Input(component_id=pages.config.APP_ID_SPEECHES, component_property='value'),
+    prevent_initial_call=False
 )
 def update_output_speech(input_value):
     """
     :param input_value:
     :return:
     """
-    return __get_speeches(input_value)
+    return interface_utils.get_speeches(input_value)
 
 @callback(
     Output(component_id=pages.config.APP_ID_POLICY_CARDS, component_property='children'),
-    Input(component_id=pages.config.APP_ID_POLICY, component_property='value')
+    Input(component_id=pages.config.APP_ID_POLICY, component_property='value'),
+    prevent_initial_call=False
 )
 def update_output_policy(input_value):
     """
     :param input_value:
     :return:
     """
-    return __get_policy_updates(input_value)
+    return interface_utils.get_policy_updates(input_value)
 
 @callback(
     Output(component_id=pages.config.APP_ID_RESEARCH_CARDS, component_property='children'),
-    Input(component_id=pages.config.APP_ID_RESEARCH, component_property='value')
+    Input(component_id=pages.config.APP_ID_RESEARCH, component_property='value'),
+    prevent_initial_call=False
 )
 def update_output_div(input_value):
     """
     :param input_value:
     :return:
     """
-    return __get_researches(input_value)
+    return interface_utils.get_researches(input_value)
 
-def __overdraft_figure(is_average):
-    color_map = {"Total": "#ad0034", "Collateralized": "#4BAAC8", "Funds":  "#C0C0C0",
-                 "Book Entry": "#7FFFD4"}
-    data_set = src.liquidity_monitor.daylight_overdraft(is_average)
-    figure = go.Figure()
-    end_date = None
-    start_date = None
-    ts_tmp = None
-    for key, ts in data_set.items():
-        figure.add_trace(go.Scatter(x=list(ts.keys()), y=list(ts.values()), name=key,
-                                    line={'color': color_map[key], 'width': 1.2},
-                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                                  list(ts.keys()))),
-                                    hovertemplate=
-                                    '%{y:.0f} Million ($) <br>' +
-                                    '%{text}',
-                                    ))
-        end_date = list(ts.keys())[-1]
-        start_date = list(ts.keys())[0]
-        ts_tmp = ts
-
-    __add_qt_regime(figure, start_date, end_date)
-    figure.update_yaxes(title_text="Million ($)")
-    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
-                                 'y': 1.02, 'xanchor': "right", 'x': 1})
-    figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
-                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
-    figure.update_layout(title=f"Intraday {'Peak' if not is_average else 'Average'} "
-                               f"Overdrafts of Deposit Institutions")
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __elasticity_figure():
-    start_date = src_config.TS_START_DATE
-    data_set = src.liquidity_monitor.get_elasticity_data(start_date)
-    color_map = {"50th": "#ad0034", "2.5th": "#4BAAC8", "97.5th": "#4BAAC8",
-                 "16th": "#C0C0C0", "84th": "#C0C0C0"}
-    figure = go.Figure()
-    end_date = None
-    ts_tmp = None
-    for key, ts in data_set.items():
-        figure.add_trace(go.Scatter(x=list(ts.keys()), y=list(ts.values()), name=key,
-                                    line={'color': color_map[key], 'width': 1.2},
-                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                                  list(ts.keys()))),
-                                    hovertemplate=
-                                    '%{y:.3f} bps/% <br>' +
-                                    '%{text}',
-                                    ))
-        end_date = list(ts.keys())[-1]
-        ts_tmp = ts
-
-    __add_qt_regime(figure, start_date, end_date)
-    figure.update_yaxes(title_text="Bps/%")
-    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
-                                 'y': 1.02, 'xanchor': "right", 'x': 1})
-    figure.add_trace(go.Scatter(x=list(ts_tmp.keys()), y=len(list(ts_tmp.values())) * [0],
-                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
-    figure.update_layout(title="Reserve Demand Elasticity")
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-
-def __add_qt_regime(figure, start_date, end_date, add_regime=True, cap=None, floor=None):
-    if add_regime:
-        figure.add_vrect(x0=max(start_date, src_config.PREV_QT_START), x1=src_config.PREV_QT_END,
-                         annotation_text=f"QT: {src_config.PREV_QT_START.strftime('%Y.%m.%d')}"
-                                         f" - {src_config.PREV_QT_END.strftime('%Y.%m.%d')}",
-                         annotation_position="top left",
-                         fillcolor="#536878", opacity=0.25, line_width=0)
-
-        ed_str = src_config.QT_END.strftime('%Y.%m.%d') \
-            if src_config.QT_END is not None else 'Present'
-        figure.add_vrect(x0=src_config.QT_START, x1=src_config.QT_END
-        if src_config.QT_END is not None else end_date,
-                         annotation_text=f"QT: {src_config.QT_START.strftime('%Y.%m.%d')}"
-                                         f" - {ed_str}",
-                         annotation_position="top left",
-                         fillcolor="#536878", opacity=0.25, line_width=0)
-    note = f'Last Update: {end_date.strftime("%Y.%m.%d")}'
-    if cap is not None and floor is not None:
-        note += f". Spread is capped at {cap} bps and floored at {floor} bps."
-
-    figure.add_annotation(
-        showarrow=False,
-        text=note,
-        font={'size': 10},
-        xref='x domain',
-        x=0,
-        yref='y domain',
-        y=-0.2
-    )
-    return figure
-
-def __color_map():
-    color_map = {"": "#ad0034", " 1%": "#4BAAC8", " 99%": "#4BAAC8",
-                 " 25%": "#C0C0C0", " 75%": "#C0C0C0"}
-    return color_map
-
-def __repo_volum_color_map():
-    color_map = {"sofr": interface_config.LINE_COLOR,
-                 "tgcr": "#FF6347",
-                 "bgcr": "#3CB371",
-                 "effr": "#ad0034",
-                 "obfr": "#FFFF99"}
-
-    return color_map
-
-def __secured_repo_volume_figure(is_repo):
-
-    start_date = src_config.TS_START_DATE_L
-    end_date = interface_utils.end_date().replace(tzinfo=None)
-    time_series_set =  src.liquidity_monitor.repo_volume_ts(start_date, end_date, is_repo=is_repo)
-
-    figure = go.Figure()
-
-    for key, time_series in time_series_set.items():
-        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.2f} BN($) <br>' +
-                                '%{text}',
-                                line={'color': __repo_volum_color_map()[key],
-                                      'width': interface_config.LINE_WIDTH},
-                                name=key.upper(), showlegend=True))
-    last_date = end_date
-    figure.update_layout(title="Volume of Transactions underlying Secured rates based on O/N Repo backed by Treasury securities"
-    if is_repo else "Volume of Transactions underlying Unsecured rates")
-    figure.update_yaxes(title_text="Billion ($)")
-    __add_qt_regime(figure, start_date, last_date, add_regime=True, cap=None, floor=None)
-    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
-                                 'y': 1.02, 'xanchor': "right", 'x': 1})
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __rate_to_iorb_figure(key_input):
-    end_date = interface_utils.end_date()
-    start_date = src_config.TS_START_DATE_L
-    cap = 80
-    floor = -20
-    time_series_set = src.liquidity_monitor.iorb_key_spread(start_date,
-                                                            end_date, key_input, cap, floor)
-    figure = go.Figure()
-
-    last_date = None
-    time_series = None
-
-    for key, time_series in time_series_set.items():
-        color_key = __color_map()[interface_utils.rename_key(key).replace(key_input.upper(), "")]
-        figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                    text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                                  list(time_series.keys()))),
-                                    hovertemplate=
-                                    '%{y:.0f} bps <br>' +
-                                    '%{text}',
-                                    line={'color': color_key,
-                                          'width': interface_config.LINE_WIDTH},
-                                    name=interface_utils.rename_key(key)))
-        last_date = list(time_series.keys())[-1]
-
-    rrp_spread = src.liquidity_monitor.iorb_rrp_spread(start_date, end_date)
-    upper_spread = src.liquidity_monitor.iorb_upper_spread(start_date, end_date)
-    lower_spread = src.liquidity_monitor.iorb_lower_spread(start_date, end_date)
-
-    figure.add_trace(go.Scatter(x=list(lower_spread.keys()), y=list(lower_spread.values()),
-                                line={'color': "#00A86B", 'width': 0.8, "dash": "dot"},
-                                name="LB"))
-    figure.add_trace(go.Scatter(x=list(rrp_spread.keys()), y=list(rrp_spread.values()),
-                                line={'color': "#FF7F50", 'width': 0.8, "dash": "dot"},
-                                name="RRP"))
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
-                                line={'color': "#FF7F50", 'width': 0.8, "dash": "dot"},
-                                name="IORB"))
-    figure.add_trace(go.Scatter(x=list(upper_spread.keys()), y=list(upper_spread.values()),
-                                line={'color': "#00A86B", 'width': 0.8, "dash": "dot"},
-                                name="UB"))
-    figure.add_trace(go.Scatter(x=list(time_series.keys()),
-                                y=len(list(time_series.values())) * [cap],
-                                line={'color': "grey", 'width': 0.3},
-                                showlegend=False, name=""))
-    figure.add_trace(go.Scatter(x=list(time_series.keys()),
-                                y=len(list(time_series.values())) * [floor],
-                                line={'color': "grey", 'width': 0.3},
-                                showlegend=False, name=""))
-    figure.update_layout(title=f"{key_input.upper()}-IORB Spread")
-    figure.update_yaxes(title_text="Bps")
-    __add_qt_regime(figure, start_date, last_date, add_regime=True, cap=cap, floor=floor)
-    figure.update_layout(legend={'orientation': "h", 'yanchor': "bottom",
-                                 'y': 1.02, 'xanchor': "right", 'x': 1})
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-
-def __iorb_figure():
-    start_date = src_config.TS_START_DATE
-    end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.iorb_effr_spread(start_date, end_date)
-    figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} bps <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=len(list(time_series.values())) * [0],
-                                line={'color': "grey", 'width': 0.5}, showlegend=False, name=""))
-    figure.update_layout(title="EFFR-IORB Spread")
-    figure.update_yaxes(title_text="Bps")
-    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __reserve_figure():
-    start_date = src_config.TS_START_DATE_L
-    end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.reserve_balance_data(start_date, end_date)
-    figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} BN($) <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.update_layout(title="Reserve Balances with Federal Reserve Banks: Week Average")
-    figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __foreign_rrp_figure():
-    start_date = src_config.TS_START_DATE_L
-    end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, src_config.TABLE_FOREIGN_RRP)
-    figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()),
-                                y=list(map(lambda x: x/1e3, list(time_series.values()))),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} BN($) <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.update_layout(title="Reverse Repurchase Agreements: Foreign Official and"
-                               " International Accounts: Wednesday Level")
-    figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __rrp_figure():
-    start_date = src_config.TS_START_DATE_L
-    end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.rrp_data(start_date, end_date, src_config.TABLE_RRP_VOLUME)
-    figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} BN($) <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.update_layout(title="Overnight Reverse Repurchase Agreements")
-    figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __tga_figure():
-    start_date = src_config.TS_START_DATE_L
-    end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.tga_balances(start_date, end_date)
-    figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.0f} BN($) <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.update_layout(title="U.S. Treasury, General Account")
-    figure.update_yaxes(title_text="Billions of U.S. Dollars")
-    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def __fedfund_figure():
-    start_date = src_config.TS_START_DATE
-    end_date = interface_utils.end_date()
-    time_series = src.liquidity_monitor.fedfund_volume_decomposition(start_date, end_date)
-    figure = go.Figure()
-    figure.add_trace(go.Scatter(x=list(time_series.keys()), y=list(time_series.values()),
-                                text=list(map(lambda x: x.strftime("%Y-%m-%d"),
-                                              list(time_series.keys()))),
-                                hovertemplate=
-                                '%{y:.2f} % <br>' +
-                                '%{text}',
-                                line={'color': interface_config.LINE_COLOR,
-                                      'width': interface_config.LINE_WIDTH},
-                                name="",
-                                showlegend=False))
-    figure.update_layout(title="Domestic Bank Share of Federal Funds Borrowed")
-    figure.update_yaxes(title_text="Percent")
-    __add_qt_regime(figure, start_date, list(time_series.keys())[-1])
-    figure = interface_utils.format_figure(figure)
-    return figure
-
-def iorb_effr_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_IORB_EFFR, component_property='children'),
+    Input(component_id=pages.config.APP_ID_IORB_EFFR, component_property='id'),
+    prevent_initial_call=False
+)
+def iorb_effr_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __iorb_figure()
-    return dmc.Paper(children=[
+    figure = interface_utils.iorb_figure()
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
@@ -565,31 +65,46 @@ def iorb_effr_panel():
             className="four columns",
             style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def iorb_bgcr_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_BGCR_IORB, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def iorb_bgcr_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __rate_to_iorb_figure("bgcr")
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+    figure = interface_utils.rate_to_iorb_figure("bgcr")
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
-        * Recent references: 
+        * Recent references:
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
 ''',   link_target="_blank"), className="row")],
             className="four columns",
             style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def iorb_tgcr_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def iorb_tgcr_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __rate_to_iorb_figure("tgcr")
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+
+    figure = interface_utils.rate_to_iorb_figure("tgcr")
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
@@ -597,23 +112,31 @@ def iorb_tgcr_panel():
         * The tri-party general collateral rate (TGCR) are repos secured by Treasury securities.
         * Reserves and Treasury repos are both essentially risk-free overnight assets, but the reserves are more liquid.
         * The spread of IORB over TGCR indicates reserves remain in relatively excess supply compared with other liquid assets.
-        * Recent references: 
+        * Recent references:
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
 ''',   link_target="_blank"), className="row")],
             className="four columns",
             style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
 
-def volume_repo_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_REPO_VOLUME, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def volume_repo_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __secured_repo_volume_figure(is_repo=True)
+    if dummy is None:
+        return dash.no_update
+
+    figure = interface_utils.secured_repo_volume_figure(is_repo=True)
     link = "https://www.financialresearch.gov/short-term-funding-monitor/market-digests/volume/chart-30/"
 
-    return dmc.Paper(children=[
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown(f'''
@@ -626,13 +149,20 @@ def volume_repo_panel():
 ''',   link_target="_blank"), className="row")],
             className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def volume_unsecured_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_UNSECURED_VOLUME, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def volume_unsecured_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __secured_repo_volume_figure(is_repo=False)
+    if dummy is None:
+        return dash.no_update
+    figure = interface_utils.secured_repo_volume_figure(is_repo=False)
     link_1 = "https://www.financialresearch.gov/short-term-funding-monitor/market-digests/volume/chart-30/"
     link_2 = "https://libertystreeteconomics.newyorkfed.org/2017/08/regulatory-incentives-and-quarter-end-dynamics-in-the-repo-market/"
     return dmc.Paper(children=[
@@ -649,13 +179,19 @@ def volume_unsecured_panel():
                  className="row"),
     ], shadow="xs", bg="black")
 
-
-def iorb_sofr_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_SOFR_IORB, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def iorb_sofr_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __rate_to_iorb_figure("sofr")
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+    figure = interface_utils.rate_to_iorb_figure("sofr")
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
@@ -663,19 +199,26 @@ def iorb_sofr_panel():
         * Some SOFR transactions include compensation for intermediating funds from the triparty segment to cash borrowers who lack direct access to that segment.
         * Hence, the TGCR-IOER spread could be a cleaner read of on the liquidity conditions in the secured market.
         * This widening of SOFR and TGCR at month-end is resulted from the limited balance sheet availability at dealers that intermediate between the triparty and centrally cleared market segments.
-         * Recent references: 
+         * Recent references:
             - [Lorie Logan, Normalizing the FOMC’s monetary policy tools, 10/21/2024](https://www.dallasfed.org/news/speeches/logan/2024/lkl241021)
 ''',   link_target="_blank"),className="row")
                           ], className="four columns", style={"padding-top": "20px"})],
-                 className="row"),
-    ], shadow="xs", bg="black")
+                 className="row")
+    ], shadow="xs", bg="black")]
 
-def iorb_obfr_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_OBFR_IORB, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def iorb_obfr_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __rate_to_iorb_figure("obfr")
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+    figure = interface_utils.rate_to_iorb_figure("obfr")
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
@@ -684,14 +227,21 @@ def iorb_obfr_panel():
 ''',   link_target="_blank"),className="row")
                           ], className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def iorb_fedfund_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_EFFR_IORB, component_property='children'),
+    Input(component_id=pages.config.APP_ID_TGCR_IORB, component_property='children'),
+    prevent_initial_call=False
+)
+def iorb_fedfund_panel(dummy):
     """
     :return: panel for effr-iorb spread
     """
-    figure = __rate_to_iorb_figure("effr")
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+    figure = interface_utils.rate_to_iorb_figure("effr")
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(children=[
             html.Div(dcc.Markdown('''
@@ -705,13 +255,18 @@ def iorb_fedfund_panel():
 ''',   link_target="_blank"),className="row")
                           ], className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def elasticity_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_ELASTICITY, component_property='children'),
+    Input(component_id=pages.config.APP_ID_ELASTICITY, component_property='id'),
+    prevent_initial_call=False
+)
+def elasticity_panel(dummy):
     """
     :return: panel for elasticity monitor
     """
-    figure = __elasticity_figure()
+    figure = interface_utils.elasticity_figure()
     link = ("https://libertystreeteconomics.newyorkfed.org/2024/10/tracking-"
             "reserve-ampleness-in-real-time-using-reserve-demand-elasticity/")
     return dmc.Paper(children=[
@@ -727,12 +282,17 @@ def elasticity_panel():
                  className="row"),
     ], shadow="xs", bg="black")
 
-def overdraft_panel(is_average):
+@callback(
+    Output(component_id=pages.config.APP_ID_OVERDRAFT_AVERAGE, component_property='children'),
+    Input(component_id=pages.config.APP_ID_OVERDRAFT_AVERAGE, component_property='id'),
+    prevent_initial_call=False
+)
+def overdraft_panel(dummy):
     """
     :return: panel for elasticity monitor
     """
-    figure = __overdraft_figure(is_average)
-    return dmc.Paper(children=[
+    figure = interface_utils.overdraft_figure(is_average=True)
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
         html.Div(dcc.Markdown('''
         * Daylight overdrafts occur when short-term shifts in payment activity result in a temporarily negative balance in a bank’s reserve account.
@@ -743,13 +303,43 @@ def overdraft_panel(is_average):
 ''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
                  className="row"
                  ),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def fedfund_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_OVERDRAFT_PEAK, component_property='children'),
+    Input(component_id=pages.config.APP_ID_OVERDRAFT_AVERAGE, component_property='children'),
+    prevent_initial_call=False
+)
+def overdraft_panel(dummy):
+    if dummy is None:
+        return dash.no_update
     """
     :return: panel for elasticity monitor
     """
-    figure = __fedfund_figure()
+    figure = interface_utils.overdraft_figure(is_average=False)
+    return [dmc.Paper(children=[
+        html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
+        html.Div(dcc.Markdown('''
+        * Daylight overdrafts occur when short-term shifts in payment activity result in a temporarily negative balance in a bank’s reserve account.
+        * Higher average overdrafts are an indication that reserves are harder to come by in amounts needed to facilitate payments without intraday credit from the Federal Reserve.
+        * Average overdrafts are much more informative for our purposes because they abstract from idiosyncratic factors that may affect individual institutions.
+        * Recent references: 
+            - [Gara Afonso, Kevin Clark, Brian Gowen, Gabriele La Spada, JC Martinez, Jason Miu, and Will Riordan, "New Set of Indicators of Reserve Ampleness,” Federal Reserve Bank of New York Liberty Street Economics, 08/14/2024](https://libertystreeteconomics.newyorkfed.org/2024/08/a-new-set-of-indicators-of-reserve-ampleness/)
+''',   link_target="_blank",), className="four columns", style={"padding-top": "20px"})],
+                 className="row"
+                 ),
+    ], shadow="xs", bg="black")]
+
+@callback(
+    Output(component_id=pages.config.APP_ID_FF_VOLUME, component_property='children'),
+    Input(component_id=pages.config.APP_ID_FF_VOLUME, component_property='id'),
+    prevent_initial_call=False
+)
+def fedfund_panel(dummy):
+    """
+    :return: panel for elasticity monitor
+    """
+    figure = interface_utils.fedfund_figure()
     link = "https://www.newyorkfed.org/newsevents/speeches/2024/per240926/"
     return dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
@@ -762,14 +352,19 @@ def fedfund_panel():
                  className="row"),
     ], shadow="xs", bg="black")
 
-def rrp_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_RRP_PANEL, component_property='children'),
+    Input(component_id=pages.config.APP_ID_RRP_PANEL, component_property='id'),
+    prevent_initial_call=False
+)
+def rrp_panel(dummy):
     """
        :return: panel for elasticity monitor
        """
-    figure = __rrp_figure()
+    figure = interface_utils.rrp_figure()
     link = ("https://www.kansascityfed.org/research/economic-bulletin/rapid-declines-in-the-feds-"
             "overnight-reverse-repurchase-on-rrp-facility-may-start-to-slow")
-    return dmc.Paper(children=[
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(
                                children=[
@@ -786,14 +381,21 @@ def rrp_panel():
                                className="four columns",
                                style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def foreign_rrp_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_FOREIGN_RRP_PANEL, component_property='children'),
+    Input(component_id=pages.config.APP_ID_RRP_PANEL, component_property='children'),
+    prevent_initial_call=False
+)
+def foreign_rrp_panel(dummy):
     """
        :return: panel for elasticity monitor
        """
-    figure = __foreign_rrp_figure()
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+    figure = interface_utils.foreign_rrp_figure()
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(
                                children=[
@@ -806,14 +408,22 @@ def foreign_rrp_panel():
     ''', link_target="_blank", ), className="row")],
                                className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def reserve_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_RESERVE_PANEL, component_property='children'),
+    Input(component_id=pages.config.APP_ID_RRP_PANEL, component_property='children'),
+    prevent_initial_call=False
+)
+def reserve_panel(dummy):
     """
        :return: panel for elasticity monitor
        """
-    figure = __reserve_figure()
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+
+    figure = interface_utils.reserve_figure()
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(children=[
                                html.Div(
@@ -826,14 +436,22 @@ def reserve_panel():
     ''', link_target="_blank", ), className="row")],
                                className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]
 
-def tga_panel():
+@callback(
+    Output(component_id=pages.config.APP_ID_TGA_PANEL, component_property='children'),
+    Input(component_id=pages.config.APP_ID_RRP_PANEL, component_property='children'),
+    prevent_initial_call=False
+)
+def tga_panel(dummy):
     """
        :return: panel for elasticity monitor
        """
-    figure = __tga_figure()
-    return dmc.Paper(children=[
+    if dummy is None:
+        return dash.no_update
+
+    figure = interface_utils.tga_figure()
+    return [dmc.Paper(children=[
         html.Div(children=[html.Div(dcc.Graph(figure=figure), className="eight columns"),
                            html.Div(children=[
                                html.Div(dmc.Badge(
@@ -848,4 +466,4 @@ def tga_panel():
     ''', link_target="_blank", ), className="row")],
                                className="four columns", style={"padding-top": "20px"})],
                  className="row"),
-    ], shadow="xs", bg="black")
+    ], shadow="xs", bg="black")]

@@ -1,6 +1,7 @@
 """Script to load relevant data"""
 
 import datetime
+import functools
 import math
 import src.data_utils
 from src import config
@@ -31,7 +32,8 @@ def tga_balances(start_date: datetime, end_date: datetime):
     :return: return daily GTA balances
     """
     table_name = src.config.TABLE_TGA_BALANCE
-    time_series = src.data_utils.read_fred_related_table(table_name, start_date, end_date)
+    time_series = src.data_utils.read_fred_related_table(table_name)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
     result = {}
     for knot in time_series:
         result[knot] = time_series[knot]/1e3
@@ -43,7 +45,9 @@ def rrp_data(start_date:datetime, end_date:datetime, key:str):
     :param end_date:
     :return: rrp data
     """
-    return src.data_utils.read_fred_related_table(key, start_date, end_date)
+    data = src.data_utils.read_fred_related_table(key)
+    time_series = {k: v for k, v in data.items() if start_date <= k <= end_date}
+    return time_series
 
 def reserve_balance_data(start_date:datetime, end_date:datetime):
     """
@@ -51,17 +55,22 @@ def reserve_balance_data(start_date:datetime, end_date:datetime):
     :param end_date:
     :return: bank reserves
     """
-    return src.data_utils.read_fred_related_table(src.config.TABLE_RESERVE_BALANCE, start_date, end_date)
+    data = src.data_utils.read_fred_related_table(src.config.TABLE_RESERVE_BALANCE)
+    time_series = {k: v for k, v in data.items() if start_date <= k <= end_date}
+    return time_series
 
 
+@functools.lru_cache(maxsize=32)
 def __iorb_timeseries(start_date: datetime, end_date: datetime):
-    return src.data_utils.read_fred_related_table(src.config.TABLE_IORB, start_date, end_date)
+    time_series = src.data_utils.read_fred_related_table(src.config.TABLE_IORB)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
 
 def __effr_timeseries(start_date:datetime, end_date:datetime):
-
-    data = src.data_utils.read_fred_related_table(
-        src.config.TABLE_EFFR, start_date, end_date)
-    return data
+    time_series = src.data_utils.read_fred_related_table(
+        src.config.TABLE_EFFR)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
 
 
 def iorb_effr_spread(start_date:datetime, end_date:datetime):
@@ -107,6 +116,7 @@ def iorb_key_spread(start_date:datetime, end_date:datetime, key_input, cap: floa
     iorb = __iorb_timeseries(start_date, end_date)
     tgcr = get_short_end_timeseries(key_input.upper(), start_date, end_date, apply_spread=False)
 
+    print(" ................", start_date, end_date, key_input, cap, floor)
     spread = {}
     for key, ts in tgcr.items():
         spread[key] = {}
@@ -221,18 +231,22 @@ def __key_set():
 
 
 def __rrp_rate(start_date:datetime, end_date:datetime):
-    data = src.data_utils.read_fred_related_table(src.config.TABLE_RRP_RATE, start_date, end_date)
-    return data
+    time_series = src.data_utils.read_fred_related_table(src.config.TABLE_RRP_RATE)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
 
 
 def __upper_rate(start_date:datetime, end_date:datetime):
-    data = src.data_utils.read_fred_related_table(src.config.TABLE_UPPER_BOUND, start_date, end_date)
-    return data
+    time_series = src.data_utils.read_fred_related_table(src.config.TABLE_UPPER_BOUND)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
 
 def __lower_rate(start_date:datetime, end_date:datetime):
-    data = src.data_utils.read_fred_related_table(src.config.TABLE_UPPER_BOUND, start_date, end_date)
-    return data
+    time_series = src.data_utils.read_fred_related_table(src.config.TABLE_UPPER_BOUND)
+    time_series = {k: v for k, v in time_series.items() if start_date <= k <= end_date}
+    return time_series
 
+@functools.lru_cache()
 def get_short_end_timeseries(data_key, start_date, end_date, apply_spread=True):
     """
     :param data_key:

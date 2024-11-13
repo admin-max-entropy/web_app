@@ -69,8 +69,9 @@
   .one.column,
   .one.columns                    { width: 14.06666666667%; }
   .two.columns                    { width: 10.3333333333%; }
-  .three.columns                  { width: 22%;            }
+  .three.columns                  { width: 26%;            }
   .four.columns                   { width: 33.2666666667%; }
+  .four.half.columns              { width: 38.2666666667%; }
   .five.columns                   { width: 39.3333333333%; }
   .six.columns                    { width: 48%;            }
   .seven.columns                  { width: 56.6666666667%; }
@@ -78,6 +79,7 @@
   .nine.columns                   { width: 74.0%;          }
   .ten.columns                    { width: 82.6666666667%; }
   .eleven.columns                 { width: 85.3333333333%; }
+  .eleven.half.columns                 { width: 98.3333333333%; }
   .twelve.columns                 { width: 98%; margin-left: 0; }
 
   .one-third.column               { width: 30.6666666667%; }
@@ -132,7 +134,8 @@ body {
   line-height: 1.6;
   font-weight: 400;
   font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #E0E0E0; }
+  color: #E0E0E0;
+  width: 100%}
 
 
 /* Typography
@@ -298,7 +301,7 @@ label > .label-body {
 /* Lists
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 ul {
-  list-style: circle inside; }
+}
 ol {
   list-style: decimal inside; }
 ol, ul {
@@ -308,10 +311,10 @@ ul ul,
 ul ol,
 ol ol,
 ol ul {
-  margin: 1.5rem 0 1.5rem 3rem;
-  font-size: 90%; }
+  margin: 1.5rem 1.5rem 1.5rem 1.5rem;
+  font-size: 80%; }
 li {
-  margin-bottom: 1rem; }
+  margin-bottom: 0.5rem; }
 
 
 /* Tables

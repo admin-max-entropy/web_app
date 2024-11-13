@@ -8,6 +8,25 @@ APP_ID_SPEECH_CARDS = "app_id_speech_cards"
 APP_ID_POLICY_CARDS = "app_id_policy_cards"
 APP_ID_RESEARCH_CARDS = "app_id_research_cards"
 
+APP_ID_TGCR_IORB = "app_id_tgcr_iorb"
+APP_ID_SOFR_IORB = "app_id_sofr_iorb"
+APP_ID_BGCR_IORB = "app_id_bgcr_iorb"
+APP_ID_EFFR_IORB = "app_id_effr_iorb"
+APP_ID_OBFR_IORB = "app_id_obfr_iorb"
+
+APP_ID_RRP_PANEL = "app_id_rrp_panel"
+APP_ID_FOREIGN_RRP_PANEL = "app_id_foreign_rrp_panel"
+APP_ID_RESERVE_PANEL = "app_id_reserve_panel"
+APP_ID_TGA_PANEL = "app_id_tga_panel"
+APP_ID_ELASTICITY = "app_id_elasticity"
+
+APP_ID_IORB_EFFR = "app_id_iorb_effr"
+
+APP_ID_OVERDRAFT_AVERAGE = "app_id_overdraft_average"
+APP_ID_OVERDRAFT_PEAK = "app_id_overdraft_peak"
+APP_ID_FF_VOLUME = "app_id_fedfund_volume"
+APP_ID_REPO_VOLUME = "app_id_repo_volume"
+APP_ID_UNSECURED_VOLUME = "app_id_unsecured_volume"
 
 JPOW = 'Jerome Powell'
 PJEFF = 'Philip Jefferson'

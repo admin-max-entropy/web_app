@@ -11,11 +11,23 @@ dash.register_page(__name__, order=5)
 layout =  dmc.MantineProvider(
     theme={
         "colorScheme": "dark",
+        "colors": {
+            "light0":["#003747"]*10,
+            "light1":["#065465"]*10,
+            "light2": ["#06768d"] * 10,
+            "light3": ["#4B9CAC"] * 10,
+            "light4": ["#008080"] * 10,
+            "light5": ["#cf9bc7"] * 10,
+            "light6": ["#aa519c"] * 10,
+            "light7": ["#bb73af"] * 10,
+            "light8": ["#6D8D96"] * 10,
+            "light9": ["#c249af"] * 10,
+        },
     },
     children=[
     html.Div(
     [
-    html.Div(html.H5("Central Bank Information Feeds"), className="row"),
+    html.Div(html.H5("Federal Reserve Information Feeds"), className="row"),
 
     html.Div(children=[
         html.Div(html.H6("Speeches"), className="row"),
@@ -35,7 +47,7 @@ layout =  dmc.MantineProvider(
 
         html.Div(children=[], id=pages.config.APP_ID_SPEECH_CARDS, className="row")],
 
-        className="four columns", style={"paddingLeft": "0px"}),
+        className="six columns", style={"paddingLeft": "0px"}),
 
     html.Div(children=[
         html.Div(html.H6("Policy Updates"), className="row"),
@@ -52,7 +64,7 @@ layout =  dmc.MantineProvider(
             ], className="row", style={"paddingBottom": "10px"}),
 
         html.Div(id=pages.config.APP_ID_POLICY_CARDS, className="row")],
-        className="four columns", style={"paddingLeft": "0px"}),
+        className="three columns", style={"paddingLeft": "0px"}),
 
     html.Div(children=[
         html.Div(html.H6("Researches"), className="row"),
@@ -70,6 +82,6 @@ layout =  dmc.MantineProvider(
             ], className="row", style={"paddingBottom": "10px"}),
 
         html.Div(id=pages.config.APP_ID_RESEARCH_CARDS, className="row")],
-        className="four columns", style={"paddingLeft": "0px"}),
+        className="three columns", style={"paddingLeft": "0px"}),
 
 ], className="row")])
