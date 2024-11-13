@@ -21,6 +21,9 @@ def __get_speech_data():
     result = {}
     for document in ai_collection.find():
         author = document["author"]
+        date = document["date"]
+        if date.year == 1899:
+            document["date"] = datetime(2024, 7, 9)
         if author not in result:
             result[author] = []
         result[author].append(document)
@@ -779,7 +782,8 @@ def fed_central_bankers():
                  pages.config.JWILLAIM: "",
                  pages.config.RBOSTIC: "",
                  pages.config.MDALY: "",
-                 pages.config.TBARKIN: ""
+                 pages.config.TBARKIN: "",
+                 pages.config.PERLI: "",
                  }
     return names_map
 
@@ -823,7 +827,9 @@ def fed_cb_images():
                  pages.config.MDALY:
                      "https://www.federalreservehistory.org/-/media/images/daly-mary-2022.jpg",
                  pages.config.TBARKIN:
-                     "https://www.federalreservehistory.org/-/media/images/barkin-tom.jpg"
+                     "https://www.federalreservehistory.org/-/media/images/barkin-tom.jpg",
+                 pages.config.PERLI:
+                    "https://www.newyorkfed.org/medialibrary/media/images/v2/bio-roberto-perli"
                  }
     return names_map
 

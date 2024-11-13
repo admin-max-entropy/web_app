@@ -42,6 +42,7 @@ RBOSTIC = "Raphael Bostic"
 MDALY = "Mary Daly"
 TBARKIN = "Tom Barkin"
 
+PERLI =  "Roberto Perli"
 MONETARY_POLICY = "Monetary Policy"
 BANKING_REGULATION = "Banking Regulation"
 
