@@ -12,8 +12,10 @@ import dash_mantine_components as dmc
 from dash import html
 from dash_iconify import DashIconify
 import functools
+import src.data_utils
 
 
+@functools.lru_cache(maxsize=None)
 def __get_speech_data():
     ai_collection = src.data_utils.fed_speech_collection()
     result = {}
