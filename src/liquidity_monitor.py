@@ -116,7 +116,6 @@ def iorb_key_spread(start_date:datetime, end_date:datetime, key_input, cap: floa
     iorb = __iorb_timeseries(start_date, end_date)
     tgcr = get_short_end_timeseries(key_input.upper(), start_date, end_date, apply_spread=False)
 
-    print(" ................", start_date, end_date, key_input, cap, floor)
     spread = {}
     for key, ts in tgcr.items():
         spread[key] = {}

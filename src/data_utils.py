@@ -62,7 +62,6 @@ def read_fedfund_volume_decomposition_table():
     return return_value
 
 def __fred_related_wrapper():
-    print("am here............")
     db_pool = get_pool_db()
     connection = db_pool.get_connection()
     cursor = connection.cursor(dictionary=True)

@@ -11,9 +11,9 @@ QT_END = None
 TS_START_DATE = datetime.datetime(2017, 1, 1)
 TS_START_DATE_L = datetime.datetime(2018, 4, 2)
 
-HOST = ""
-USER = ""
-PWD = "" #@@"
+HOST = "34.148.149.200"
+USER = "maxentropy_user"
+PWD = "maxentropy_user"
 
 DATABASE_STIR = "STIR_DB"
 TABLE_FF_DECOMP_VOLUME = "TABLE_FF_DECOMP_VOLUME"
